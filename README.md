@@ -199,6 +199,13 @@ on every push and pull request.
 
 ## Usage
 
+> [!WARNING]
+> **Back up first — especially before refactoring.** The refactorer **moves, renames, and rewrites real
+> files**. Run it only on a **clean, committed git tree** and on a **new branch** (e.g. `refactor/docs`) —
+> or copy the folder first if it isn't a git repo. Review the **before→after map and apply only after you
+> approve**. Never run it over uncommitted work: every change should be one `git restore` / `git checkout .`
+> away from undo.
+
 1. Pick the right prompt: **new project → [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md)**; **existing project → [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md)**.
 2. Paste its full contents into your AI coding agent (Claude Code, Cursor, Copilot, etc.) as the system / instruction prompt.
 3. Give it your project name and one line on what it builds.
