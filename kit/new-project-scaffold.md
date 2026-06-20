@@ -22,6 +22,18 @@ consistent with the rest of the structure. Don't reinvent the layout; **install 
 The **layout and conventions are fixed; the tech stack is not** — you decide the stack *with the user*
 through the intake below, and refine it **job by job**. Never assume or hardcode a stack.
 
+## Step 0 — first, confirm the path (new vs existing)
+**Before anything else, ask one question:** *"Brand-new project from zero, or an existing codebase/docs to
+restructure?"*
+
+- **New / from zero →** continue with this scaffolder.
+- **Existing project →** stop and switch to the **[knowledge-refactorer](knowledge-refactorer.md)** — it
+  brings existing files into this same architecture non-destructively (don't scaffold over existing work).
+- **Mixed** (new repo, but pasting in existing docs/code) → scaffold the structure here, then run the
+  refactorer on the imported material.
+
+Only once it's confirmed **new**, proceed to the input + intake below.
+
 ## Input (what the user gives first)
 - **`[Name]`** — the project name (e.g. `Acme`).
 - **What it builds (the logic)** — one or two lines on what the project does, so docs aren't empty scaffolding.
