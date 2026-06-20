@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-20
+
+### Changed
+- **`kit/principles.html`** refreshed to match the v0.2 prompts: new "Start here" section (new-vs-refactor
+  routing · back up before refactoring · key/secret handling), rule 2 updated with any-source secret
+  handling, plus new sections for token economics (measured) and anti-drift ("won't drift / remembers
+  mistakes").
+
 ## [0.2.0] - 2026-06-20
 
 ### Added
@@ -47,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supply-chain hardening: **OpenSSF Scorecard** workflow, **Dependabot** (GitHub Actions), all CI actions
   pinned by commit SHA.
 
-[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/hellOoSaksit/ai-project-scaffold/releases/tag/v0.1.0
