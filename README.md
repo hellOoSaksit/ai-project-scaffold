@@ -99,7 +99,41 @@ CI. The live **stars / forks / contributors** badges are objective GitHub stats 
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — open in a browser; for attaching/presenting. The `.md` prompts are the source of truth. |
 
-## Quick start
+## Installation
+
+This kit is **prompts, not a dependency** — there's nothing to compile or `npm install`. You "install" it by
+dropping the prompt into your AI agent. Pick whichever fits:
+
+**A — Clone the repo** (gets everything: both prompts, `kit/principles.html`, and the `docs-lint` suite):
+
+```bash
+git clone https://github.com/hellOoSaksit/ai-project-scaffold.git
+cd ai-project-scaffold
+```
+
+**B — Grab one file, no install** — open [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) or
+[`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) on GitHub and copy the raw contents. Each file is
+fully self-contained, so a single copy is enough.
+
+**Set it up in your agent:**
+
+| Agent | Where to put the prompt |
+|---|---|
+| **Claude Code** | Paste into your project's `CLAUDE.md`, or pass the file as the system / instruction prompt. |
+| **Cursor** | New chat → paste as the instruction, or add it to `.cursorrules`. |
+| **GitHub Copilot** | Paste into `.github/copilot-instructions.md`. |
+| **Codex · Gemini CLI · Aider** | Paste as the system / instruction prompt at the start of the session. |
+
+**Run the docs-lint suite** (optional — validates the docs after the agent scaffolds them):
+
+```bash
+bash scripts/docs-lint.sh
+```
+
+Needs only `bash` (built in on macOS/Linux; on Windows use Git Bash or WSL). It also runs automatically in CI
+on every push and pull request.
+
+## Usage
 
 1. Pick the right prompt: **new project → [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md)**; **existing project → [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md)**.
 2. Paste its full contents into your AI coding agent (Claude Code, Cursor, Copilot, etc.) as the system / instruction prompt.
