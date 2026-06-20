@@ -3,7 +3,7 @@ title: New-project scaffolder (spin up a project from zero)
 type: prompt
 status: active
 keywords: [scaffold, new project, bootstrap, template, umbrella, main, docs, standalone, conventions, portable]
-related: [./knowledge-refactorer.md, ./README.md, ./principles.html]
+related: [./knowledge-refactorer.md, ../README.md, ./principles.html]
 summary: >
   System prompt to bootstrap a brand-new project from zero with a proven, AI-friendly structure:
   one umbrella `[Name]-Project/` holding `[Name]-Main`, `[Name]-Docs`, `[Name]-Standalone`, plus the

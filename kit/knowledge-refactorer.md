@@ -3,7 +3,7 @@ title: Knowledge Refactorer (existing project)
 type: prompt
 status: active
 keywords: [system prompt, refactor, documentation, rag, claude.md, router, knowledge architecture]
-related: [./new-project-scaffold.md, ./README.md, ./principles.html]
+related: [./new-project-scaffold.md, ../README.md, ./principles.html]
 summary: >
   System prompt for refactoring existing Markdown into a clean knowledge architecture:
   one shared root CLAUDE.md router, README = GitHub, all knowledge in docs/ (English, AI-first).
