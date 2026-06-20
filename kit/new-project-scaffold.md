@@ -32,7 +32,10 @@ restructure?"*
 - **Mixed** (new repo, but pasting in existing docs/code) → scaffold the structure here, then run the
   refactorer on the imported material.
 
-Only once it's confirmed **new**, proceed to the input + intake below.
+Only once it's confirmed **new**, proceed to the input + intake below. **If you're scaffolding into a
+folder that already has files** (the mixed case), treat it like a refactor: make sure it's a clean,
+committed git tree on a new branch (or backed up) **before** you create or move anything — never write
+over existing work that isn't recoverable.
 
 ## Input (what the user gives first)
 - **`[Name]`** — the project name (e.g. `Acme`).
