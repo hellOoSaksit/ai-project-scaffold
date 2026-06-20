@@ -8,8 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Design review: 100/100](https://img.shields.io/badge/design%20review-100%2F100-brightgreen.svg)](#-quality-review--benchmarks)
 [![Made for AI coding agents](https://img.shields.io/badge/made%20for-AI%20coding%20agents-6366f1.svg)](#who-is-this-for)
-[![CLAUDE.md](https://img.shields.io/badge/CLAUDE.md-ready-8b5cf6.svg)](new-project-scaffold.md)
-[![AGENTS.md](https://img.shields.io/badge/AGENTS.md-ready-10b981.svg)](new-project-scaffold.md)
+[![CLAUDE.md](https://img.shields.io/badge/CLAUDE.md-ready-8b5cf6.svg)](kit/new-project-scaffold.md)
+[![AGENTS.md](https://img.shields.io/badge/AGENTS.md-ready-10b981.svg)](kit/new-project-scaffold.md)
 [![llms.txt](https://img.shields.io/badge/llms.txt-ready-f59e0b.svg)](https://llmstxt.org/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
@@ -95,16 +95,16 @@ CI. The live **stars / forks / contributors** badges are objective GitHub stats 
 
 | File | Use for |
 |---|---|
-| [`new-project-scaffold.md`](new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Standalone}` + every convention (router · frontmatter · registries · standalone lifecycle · runbooks · skills · enforcement). |
-| [`knowledge-refactorer.md`](knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
-| [`principles.html`](principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — open in a browser; for attaching/presenting. The `.md` prompts are the source of truth. |
+| [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Standalone}` + every convention (router · frontmatter · registries · standalone lifecycle · runbooks · skills · enforcement). |
+| [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
+| [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — open in a browser; for attaching/presenting. The `.md` prompts are the source of truth. |
 
 ## Quick start
 
-1. Pick the right prompt: **new project → [`new-project-scaffold.md`](new-project-scaffold.md)**; **existing project → [`knowledge-refactorer.md`](knowledge-refactorer.md)**.
+1. Pick the right prompt: **new project → [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md)**; **existing project → [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md)**.
 2. Paste its full contents into your AI coding agent (Claude Code, Cursor, Copilot, etc.) as the system / instruction prompt.
 3. Give it your project name and one line on what it builds.
-4. Let the agent create the structure, then commit. Open [`principles.html`](principles.html) to see the shape visually.
+4. Let the agent create the structure, then commit. Open [`kit/principles.html`](kit/principles.html) to see the shape visually.
 
 > **Self-contained:** these prompts carry the full structure inline, so a new project inherits it without
 > depending on any reference codebase. Improve a convention here and every future project picks it up.
