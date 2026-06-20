@@ -19,11 +19,45 @@ You bootstrap a **new project from zero**, installing a proven, AI-friendly stru
 well-organized from commit one. Everything you need is described in this prompt — don't depend on any
 external reference codebase. Where a rule below is thin, apply it with good judgment and keep it
 consistent with the rest of the structure. Don't reinvent the layout; **install the one below**.
+The **layout and conventions are fixed; the tech stack is not** — you decide the stack *with the user*
+through the intake below, and refine it **job by job**. Never assume or hardcode a stack.
 
-## Input
+## Input (what the user gives first)
 - **`[Name]`** — the project name (e.g. `Acme`).
-- **What it builds** — one or two lines (so docs aren't empty scaffolding).
-- Whether it will have **standalone** apps and whether any are **stateful** (need a DB).
+- **What it builds (the logic)** — one or two lines on what the project does, so docs aren't empty scaffolding.
+
+That's the **minimum to start**. Everything else (tech stack, datastore, auth, deployment, standalone
+apps) you **ask** in the intake below — you do **not** assume it. This prompt **does not fix a stack**:
+the layout/conventions are fixed, the stack is a **per-project, job-by-job** decision.
+
+## Intake — ask before you scaffold (recommend + justify, never assume a stack)
+Once you have the **name + logic**, run a short guided intake **before** creating anything:
+
+- **Ask, don't assume.** Never silently pick a framework, database, or host — the structure here is
+  stack-agnostic on purpose; fill the stack from the user's answers.
+- **Every question carries a recommendation + a one-line reason**, and the user can override — phrase it
+  as *"I'd suggest **X** because **Y** — ok, or prefer another?"* Default to the user's existing skills
+  and the **simplest thing that fits the logic** (KISS); don't engineer for scale nobody asked for.
+- **Batch the questions** (don't interrogate one-by-one); ask only what's needed to scaffold, and mark
+  the rest as *"decide per task"*. Re-confirm the choices before writing any files.
+- **Record every decision + its reason** in `architecture/tech-stack.md` (and seed `ports.md` /
+  `versions.md`) — the stack lives there as a **recorded choice**, never hardcoded into this prompt.
+
+Cover at least:
+
+| Ask | Recommend with a reason (example — adapt to the logic) | Where it lands |
+|---|---|---|
+| **Frontend** (is there a UI at all?) | "Vite + React for an SPA — fast dev, huge ecosystem" | `tech-stack.md` · `[Name]-Main/` |
+| **Backend / API** | "FastAPI if Python + async I/O; Nest/Express if JS-first" | `tech-stack.md` · `[Name]-Main/` |
+| **Datastore — stateful?** | "Postgres for relational; no DB if it's stateless" | `tech-stack.md` · `database-design.md` |
+| **Auth** (needed now?) | "defer until there are real users; cookie + JWT when needed" | `tech-stack.md` · dev-rules (auth) |
+| **Deploy / run target** | "Docker compose locally, one host to start" | `architecture/deploy.md` |
+| **Standalone apps** (a big feature shipping on its own? stateful?) | "build standalone-first if it can ship alone" | `standalone/` · lifecycle |
+| **License · i18n · repo host** | "MIT unless told; i18n on for a multi-language UI" | root files |
+
+Anything the user can't answer yet → record it as `status: design` / a `TODO` in the owning doc;
+**don't invent** an answer (no-invention rule). The stack may change later **job by job** — when it does,
+update `tech-stack.md` in the same commit.
 
 ## Target structure (create this)
 
