@@ -22,6 +22,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/hellOoSaksit/ai-project-scaffold/badge)](https://scorecard.dev/viewer/?uri=github.com/hellOoSaksit/ai-project-scaffold)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13318/badge)](https://www.bestpractices.dev/projects/13318)
 [![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](.github/SECURITY.md)
+[![Live overview](https://img.shields.io/badge/live-visual%20overview-8b5cf6.svg)](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)
 
 **Keywords:** AI project structure · Claude Code template · `CLAUDE.md` / `AGENTS.md` / `llms.txt` starter ·
 AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-first docs · context engineering.
@@ -161,7 +162,7 @@ instead of slowly rotting:
 |---|---|
 | [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Standalone}` + every convention (router · frontmatter · registries · standalone lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
-| [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — open in a browser; for attaching/presenting. The `.md` prompts are the source of truth. |
+| [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
 
 ## Installation
 
