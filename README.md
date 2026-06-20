@@ -129,6 +129,8 @@ the doc that *owns* the task — not the whole knowledge base:
 per-task savings land **83–96%**. Picking which doc to open costs only ~5.5k tokens (all 42 frontmatter
 blocks combined). Treat "full KB" as an upper bound — the structural point is: open **1 owning doc, not 42**.*
 
+**Raw run, method & how to reproduce:** [`docs/evidence/measurements.md`](docs/evidence/measurements.md) — verbatim `tiktoken` output, not estimates.
+
 Why it holds, from published work:
 
 - **Load less, on purpose.** Anthropic's guidance is to find *"the smallest possible set of high-signal tokens"* and to treat context as *"a finite resource with diminishing marginal returns"* (context rot). The thin router + `llms.txt` identifiers + just-in-time **progressive disclosure** are exactly that. — [Anthropic, *Effective context engineering*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
@@ -150,6 +152,8 @@ instead of slowly rotting:
 - **Drift can't pass silently** — `docs-lint` runs in CI and **fails** on a broken link/anchor or missing/invalid frontmatter, so the docs and their `related:` graph can't quietly fall out of sync with the code.
 - **Values can't drift** — single-source-of-truth registries (`ports.md`, `versions.md`), read + updated in the same commit; no duplicated numbers diverging across files.
 - **Change keeps the map true** — the rule "update the owning doc **and** its index in the same commit" (plus "one file = one concept" and "reuse before you build") bounds sprawl as the project scales.
+
+**Proof the guard bites** (real `docs-lint` run — clean → broken link → exit 1 → green again): [`docs/evidence/measurements.md`](docs/evidence/measurements.md).
 
 ## The kit
 
