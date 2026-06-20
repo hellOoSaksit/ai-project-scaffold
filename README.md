@@ -21,6 +21,7 @@
 [![Last commit](https://img.shields.io/github/last-commit/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/commits/main)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/hellOoSaksit/ai-project-scaffold/badge)](https://scorecard.dev/viewer/?uri=github.com/hellOoSaksit/ai-project-scaffold)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13318/badge)](https://www.bestpractices.dev/projects/13318)
+[![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](.github/SECURITY.md)
 
 **Keywords:** AI project structure · Claude Code template · `CLAUDE.md` / `AGENTS.md` / `llms.txt` starter ·
 AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-first docs · context engineering.
@@ -61,6 +62,25 @@ docs, multiple apps, or AI agents working in it.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
 - **Standalone lifecycle** — build big features as separate apps, then fold back into main on gated promotion.
 - **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI.
+
+## 🔒 Security & secret handling
+
+> [!IMPORTANT]
+> **Keys never live in the repo — and your AI agent is told so, explicitly.** The scaffolded
+> `CLAUDE.md` / `AGENTS.md` carry a **hard rule** for handling credentials **from any source** (not just
+> `.env` — also config files, MCP config, pasted snippets, logs, command output): never print / log /
+> paste a real key value (redact to `****`), never hardcode or commit one (only `*.example` placeholders),
+> never put a real secret in a browser-shipped frontend env (`VITE_*` / `NEXT_PUBLIC_*`), and **flag +
+> rotate** any leaked key.
+
+What the kit bakes in:
+
+- **Secrets only in gitignored env files** — commit `*.example` placeholders only; never in code, docs, or the frontend bundle.
+- **Prod boot-guard** — the app refuses to start in `production` while any credential is still a dev default.
+- **AI-aware by default** — the agent rules above mean assistants redact keys, don't echo them back, and won't commit one by accident.
+- **Supply-chain hygiene** — GitHub Actions SHA-pinned · Dependabot on · **OpenSSF Scorecard** in CI · holds the **OpenSSF Best Practices** passing badge (see badges up top).
+
+Found a vulnerability? See **[`SECURITY.md`](.github/SECURITY.md)** — a private advisory is preferred.
 
 ## 🏅 Quality review & benchmarks
 
