@@ -6,6 +6,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-20
+
+### Added
+- **OpenSSF Best Practices passing badge** (project 13318) + a Security policy badge in the README.
+- **`scripts/docs-lint.sh`** automated docs test suite, wired into a **`docs-lint`** GitHub Actions workflow
+  (runs on every push/PR, plus a Markdown link check) — verified green in CI.
+- Scaffolder **guided intake**: asks *new vs refactor* first, then takes name + logic, then a **tiered stack
+  interview** (each question carries a recommendation + reason; the stack is never fixed in the prompt).
+- Explicit **AI key/secret-handling rule** (applies to any source, not only `.env`) in both prompts, and a
+  **Security & secret handling** section in the README.
+- **Backup / clean-git-tree guardrail** before refactoring (and before scaffolding into a non-empty folder),
+  plus a prominent backup warning in the README.
+- **Token economics** and **anti-drift** README sections, backed by **`docs/evidence/measurements.md`**
+  (real `tiktoken` measurements + a docs-lint pass/fail demonstration) and research citations.
+- README **Installation** section and a **`new-project/`** entry in the kit.
+
+### Changed
+- Repo layout tidied for clarity: the three kit files moved into **`kit/`**; community-health files
+  (`CONTRIBUTING`, `SECURITY`, `CODE_OF_CONDUCT`) moved into **`.github/`** (still auto-detected by GitHub).
+  Internal links and badge URLs updated accordingly.
+
+### Security
+- Documented end-to-end secret handling; confirmed no real secrets are tracked or present in git history,
+  and that `*.example` templates carry placeholders only.
+
 ## [0.1.0] - 2026-06-20
 
 ### Added
@@ -22,5 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supply-chain hardening: **OpenSSF Scorecard** workflow, **Dependabot** (GitHub Actions), all CI actions
   pinned by commit SHA.
 
-[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/hellOoSaksit/ai-project-scaffold/releases/tag/v0.1.0
