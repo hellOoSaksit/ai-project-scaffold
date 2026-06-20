@@ -64,6 +64,25 @@
   Read the full principles from the source of truth at <a href="new-project-scaffold.md">new-project-scaffold.md</a> ·
   <a href="knowledge-refactorer.md">knowledge-refactorer.md</a> (reconnect and refresh to see the graphs).</div>
 
+<!-- 0 -->
+<section>
+  <h2>0. Start here <span class="en">— new vs refactor · back up first · keys</span></h2>
+  <div class="grid g3">
+    <div class="card"><b>First question: new or refactor?</b>
+      <p><b class="ok">New / from zero</b> → run the <b>scaffolder</b>: name + logic first, then a guided stack intake (every question = recommendation + reason; the stack is never fixed in the prompt).</p>
+      <p><b class="warn">Existing project</b> → run the <b>refactorer</b>: non-destructive, shows a before→after map.</p>
+    </div>
+    <div class="card"><b>⚠ Back up before refactoring</b>
+      <p>A refactor <b>moves / renames / rewrites real files</b>. Run only on a <b>clean, committed git tree</b> on a <b>new branch</b> — or copy the folder first if it isn't a git repo.</p>
+      <p class="note">Every change one <code>git restore</code> away from undo. Apply only after you approve the before→after map.</p>
+    </div>
+    <div class="card"><b>🔑 Keys / secrets — any source</b>
+      <p>Treat every credential as sensitive <i>wherever it appears</i> (<code>.env</code> · config · <code>.mcp.json</code> · a pasted snippet · logs). Never <b>print / log / commit</b> a real value; never put one in a <b>frontend</b> env (<code>VITE_*</code> ships to the browser).</p>
+      <p class="note">Leaked key → flag + treat as compromised → rotate.</p>
+    </div>
+  </div>
+</section>
+
 <!-- 1 -->
 <section>
   <h2>1. Project structure <span class="en">— umbrella + 3 repos</span></h2>
@@ -99,7 +118,7 @@ flowchart TD
   <h2>2. Always-on rules (1–7) <span class="en">— hard rules for every task</span></h2>
   <div class="grid g2">
     <div class="rule"><span class="n">1</span> <b>Reuse before build</b> — find and reuse/extend something existing before building new; make the smallest change that fits the existing design</div>
-    <div class="rule"><span class="n">2</span> <b>No hardcode</b> — settings live on a tools/admin surface + DB, not baked into .env/code; secrets only in gitignored env files behind a prod boot-guard; UI text is i18n (t(key))</div>
+    <div class="rule"><span class="n">2</span> <b>No hardcode</b> — settings live on a tools/admin surface + DB, not baked into .env/code; secrets only in gitignored env files behind a prod boot-guard; <b>keys/secrets are sensitive from any source — never print/log/commit, never in a frontend env, rotate if leaked</b>; UI text is i18n (t(key))</div>
     <div class="rule"><span class="n">3</span> <b>Registries first</b> — read/update <code>ports.md</code> + <code>versions.md</code> in the same commit</div>
     <div class="rule"><span class="n">4</span> <b>Running — ask first</b> — always ask "should I run it, or will you?" → only via a start script / <code>docker compose up -d</code>, never a hidden dev server</div>
     <div class="rule"><span class="n">5</span> <b>Docs discipline</b> — change code/structure → update the owning doc + index in the same commit</div>
@@ -226,6 +245,48 @@ flowchart TD
   </table>
   <p class="note">Rule: allocate the port pair from <code>ports.md</code> + the version from <code>versions.md</code> (same commit) · a stateful standalone's datastore is internal-by-default. <br>
   Example offsets: main 5173/8000 · app-A 5174/8001 · app-B 5175/8002 — leave +1 per pair so every app can run at once.</p>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2>8. Token economics <span class="en">— why less context = cheaper + sharper</span></h2>
+  <p class="lead">Router + <code>llms.txt</code> + opening only the doc that <i>owns</i> the task → the model loads a fraction of the knowledge base. Cheaper is a side effect of loading only what's relevant, not the goal.</p>
+  <div class="grid g2">
+    <div class="card"><b>Measured — real project (42 docs, ~122k tok · tiktoken cl100k_base)</b>
+      <table>
+        <tr><th>Task</th><th>with structure</th><th>full KB</th><th>saved</th></tr>
+        <tr><td>Allocate a host port</td><td>4,499</td><td>125,334</td><td><b class="ok">96%</b></td></tr>
+        <tr><td>Work on a feature</td><td>9,017</td><td>125,334</td><td><b class="ok">93%</b></td></tr>
+        <tr><td>Add a backend endpoint</td><td>11,617</td><td>125,334</td><td><b class="ok">91%</b></td></tr>
+        <tr><td>Change the DB schema</td><td>19,177</td><td>125,334</td><td><b class="ok">85%</b></td></tr>
+        <tr><td>Start a new session</td><td>21,103</td><td>125,334</td><td><b class="ok">83%</b></td></tr>
+      </table>
+      <p class="note">Picking which doc to open costs ~5.5k tok (all frontmatter combined). "Full KB" = upper bound; the point is open <b>1 owning doc, not 42</b>. Evidence: docs/evidence/measurements.md.</p>
+    </div>
+    <div class="card"><b>Why it holds (published)</b>
+      <p>Context is a finite resource with diminishing returns — <b>context rot</b>: more tokens → worse recall (Anthropic, <i>effective context engineering</i>).</p>
+      <p><b>Lost in the Middle</b> — accuracy drops &gt;30% when the needed fact sits mid-context (Liu et al., TACL 2023).</p>
+      <p>Bloated context files cost ~20% more &amp; lower success (Upsun). English is token-cheap — non-English up to 15× more tokens (Petrov et al., NeurIPS 2023); Thai ×2.8–6 here → docs in English.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section>
+  <h2>9. Won't drift as it grows <span class="en">— and it remembers its mistakes</span></h2>
+  <div class="grid g2">
+    <div class="card"><b class="ok">Stays on track</b>
+      <p><b>One map every time</b> — re-enter through the single router + <code>llms.txt</code>; the agent never wanders or re-invents paths.</p>
+      <p><b>Resumes, not restarts</b> — <code>process/session-handoff.md</code> carries status + a "resume here" prompt.</p>
+      <p><b>Remembers mistakes</b> — <code>process/lessons.md</code>: decisions + traps hit for real + known risks → no repeat.</p>
+      <p><b>Runbooks</b> — <code>process/ai-runbooks.md</code> (R1–R8) for recurring tasks.</p>
+    </div>
+    <div class="card"><b class="warn">Drift can't pass silently</b>
+      <p><code>docs-lint</code> runs in CI and <b>fails the build</b> on a broken link/anchor or missing/invalid frontmatter — docs + the <code>related:</code> graph stay true to the code.</p>
+      <p>SSOT registries (<code>ports.md</code> · <code>versions.md</code>) read + updated in the same commit → values can't diverge.</p>
+      <p class="note">Proven: a real docs-lint run goes clean → broken link → exit 1 → green again (docs/evidence/measurements.md).</p>
+    </div>
+  </div>
 </section>
 
 </div>
