@@ -13,6 +13,14 @@
 [![llms.txt](https://img.shields.io/badge/llms.txt-ready-f59e0b.svg)](https://llmstxt.org/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
+<!-- live project stats (auto-updating) + external automated health score -->
+[![Stars](https://img.shields.io/github/stars/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/stargazers)
+[![Forks](https://img.shields.io/github/forks/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/network/members)
+[![Contributors](https://img.shields.io/github/contributors/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/issues)
+[![Last commit](https://img.shields.io/github/last-commit/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/commits/main)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/hellOoSaksit/ai-project-scaffold/badge)](https://scorecard.dev/viewer/?uri=github.com/hellOoSaksit/ai-project-scaffold)
+
 **Keywords:** AI project structure · Claude Code template · `CLAUDE.md` / `AGENTS.md` / `llms.txt` starter ·
 AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-first docs · context engineering.
 
@@ -71,6 +79,16 @@ the visual overview validated, and every internal link checked.
 
 > **Transparency:** the score is a *structured self-review* against external standards, not a third-party
 > audit. The rubric and every reference are public — so you can re-run the judgement yourself.
+
+**Two different scores, kept separate (don't conflate them):**
+
+| Score | Source | Measures |
+|---|---|---|
+| **100/100** (above) | structured self-review vs published standards | *design quality* of the structure |
+| **OpenSSF Scorecard** badge (top) | [OpenSSF](https://securityscorecards.dev/) automated analysis, runs in CI | *supply-chain / repo-health & security posture* — **not** content quality |
+
+The Scorecard badge populates after the [Scorecard workflow](.github/workflows/scorecard.yml) runs once on
+CI. The live **stars / forks / contributors** badges are objective GitHub stats that grow over time.
 
 ## The kit
 
