@@ -111,6 +111,46 @@ the visual overview validated, and every internal link checked.
 The Scorecard badge populates after the [Scorecard workflow](.github/workflows/scorecard.yml) runs once on
 CI. The live **stars / forks / contributors** badges are objective GitHub stats that grow over time.
 
+## 💸 Token economics — measured, not guessed
+
+Built on how LLMs actually spend tokens, then **measured on a real project that uses this kit** (42 docs,
+~122k tokens of knowledge). With progressive disclosure the agent loads the thin router + `llms.txt` + only
+the doc that *owns* the task — not the whole knowledge base:
+
+| Task | Loaded *with* the structure | Load the full KB | Saved |
+|---|--:|--:|--:|
+| Allocate a host port | 4,499 | 125,334 | **96%** |
+| Work on a feature (Compare) | 9,017 | 125,334 | **93%** |
+| Add a backend endpoint | 11,617 | 125,334 | **91%** |
+| Change the DB schema | 19,177 | 125,334 | **85%** |
+| Start a new session | 21,103 | 125,334 | **83%** |
+
+*Measured with `tiktoken` (cl100k_base); "full KB" = router + every doc (the no-map worst case). Real
+per-task savings land **83–96%**. Picking which doc to open costs only ~5.5k tokens (all 42 frontmatter
+blocks combined). Treat "full KB" as an upper bound — the structural point is: open **1 owning doc, not 42**.*
+
+Why it holds, from published work:
+
+- **Load less, on purpose.** Anthropic's guidance is to find *"the smallest possible set of high-signal tokens"* and to treat context as *"a finite resource with diminishing marginal returns"* (context rot). The thin router + `llms.txt` identifiers + just-in-time **progressive disclosure** are exactly that. — [Anthropic, *Effective context engineering*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- **Big context also hurts accuracy.** *Lost in the Middle* finds a U-shaped curve — accuracy drops **>30%** when the needed fact sits mid-context. Smaller context is cheaper **and** more correct. — [Liu et al., TACL 2023](https://arxiv.org/abs/2307.03172)
+- **Bloated context files cost more and work worse** (~**+20%** cost, lower task success) vs minimal hand-written ones — why `AGENTS.md` here is signal-dense, not exhaustive. — [Upsun](https://developer.upsun.com/posts/ai/agents-md-less-is-more)
+- **English docs are cheaper per token** — up to **15×** token disparity across languages; Thai measured here at **×2.8–6** the English count for the same meaning (`hello` = 1 token vs `สวัสดี` = 6). The kit mandates English doc prose (local language only for *content*). — [Petrov et al., NeurIPS 2023](https://aleksandarpetrov.github.io/tokenization-fairness/)
+
+**When it does *not* pay:** a throwaway script, or docs left to bloat (the exact failure the research warns about).
+
+## 🧭 Won't drift as it grows — and it remembers its mistakes
+
+Structure alone isn't enough; the kit wires in the feedback loops that keep a long-running project on track
+instead of slowly rotting:
+
+- **One map, every time** — every task re-enters through the single `CLAUDE.md` router + `llms.txt`, so the agent navigates from the same map and doesn't wander or re-invent paths.
+- **It resumes, not restarts** — `process/session-handoff.md` carries the live status + a "resume here" prompt, updated each session, so the next session (or a different agent) picks up exactly where the last one stopped.
+- **It remembers its mistakes** — `process/lessons.md` is a running log of decisions made, traps hit *for real*, and known-but-unfixed risks, so the same wrong turn isn't taken twice.
+- **Recurring work is a runbook, not a guess** — `process/ai-runbooks.md` (R1–R8: pause/resume · move machine · remove a lib · audit deps · incident/rollback · release · expose a standalone · create a skill).
+- **Drift can't pass silently** — `docs-lint` runs in CI and **fails** on a broken link/anchor or missing/invalid frontmatter, so the docs and their `related:` graph can't quietly fall out of sync with the code.
+- **Values can't drift** — single-source-of-truth registries (`ports.md`, `versions.md`), read + updated in the same commit; no duplicated numbers diverging across files.
+- **Change keeps the map true** — the rule "update the owning doc **and** its index in the same commit" (plus "one file = one concept" and "reuse before you build") bounds sprawl as the project scales.
+
 ## The kit
 
 | File | Use for |
@@ -177,6 +217,9 @@ The structure and the review rubric are grounded in published standards and rese
 **Research that shaped the scoring**
 - [“Your AGENTS.md is probably too long” — *less is more* (Upsun)](https://developer.upsun.com/posts/ai/agents-md-less-is-more) — bloated / auto-generated context files **lower** agent task-success and raise cost ~20%; minimal, hand-written ones help (~+4%). That finding is *why* the entry files here are deliberately **signal-dense**, not exhaustive.
 - [CLAUDE.md best practices — 10 sections to include (UX Planet)](https://uxplanet.org/claude-md-best-practices-1ef4f861ce7c) — tiered, living, link-out-not-inline.
+- [Anthropic — *Effective context engineering for AI agents*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — smallest set of high-signal tokens · context as a finite resource (context rot) · just-in-time progressive disclosure. The basis for the thin router + `llms.txt` + load-the-owning-doc design.
+- [Liu et al. — *Lost in the Middle: How Language Models Use Long Contexts* (TACL 2023)](https://arxiv.org/abs/2307.03172) — accuracy degrades (>30%) when relevant info is buried mid-context → smaller, targeted context is cheaper **and** more reliable.
+- [Petrov et al. — *Language Model Tokenizers Introduce Unfairness Between Languages* (NeurIPS 2023)](https://aleksandarpetrov.github.io/tokenization-fairness/) — up to 15× token disparity across languages → the reason doc prose is mandated in English (token-cheap), local language only for *content*.
 
 **Frameworks & patterns**
 - [Diátaxis documentation framework](https://diataxis.fr/) — why this kit groups docs **job-first** and encodes Diátaxis intent in frontmatter `type:` instead of the folder tree.
