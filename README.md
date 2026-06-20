@@ -20,6 +20,7 @@
 [![Issues](https://img.shields.io/github/issues/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/issues)
 [![Last commit](https://img.shields.io/github/last-commit/hellOoSaksit/ai-project-scaffold)](https://github.com/hellOoSaksit/ai-project-scaffold/commits/main)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/hellOoSaksit/ai-project-scaffold/badge)](https://scorecard.dev/viewer/?uri=github.com/hellOoSaksit/ai-project-scaffold)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13318/badge)](https://www.bestpractices.dev/projects/13318)
 
 **Keywords:** AI project structure · Claude Code template · `CLAUDE.md` / `AGENTS.md` / `llms.txt` starter ·
 AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-first docs · context engineering.
