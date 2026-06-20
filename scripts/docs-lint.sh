@@ -13,10 +13,10 @@ fail=0
 required_docs=(
   README.md
   LICENSE
-  CONTRIBUTING.md
-  SECURITY.md
-  CODE_OF_CONDUCT.md
   CHANGELOG.md
+  .github/CONTRIBUTING.md
+  .github/SECURITY.md
+  .github/CODE_OF_CONDUCT.md
 )
 
 echo "== Checking required documentation files =="

@@ -18,8 +18,8 @@ For small fixes (typos, broken links) you can skip the issue and go straight to 
 - **English** — all prompt/doc prose is in English (a presentation artifact may use a local language).
 - **Self-contained** — the two prompts must each carry the full structure inline; don't add an external
   dependency.
-- **Keep the two prompts in sync** — `new-project-scaffold.md` is the canonical source for the shape and
-  convention set; mirror any structural change into `knowledge-refactorer.md`'s Target Shape in the same PR.
+- **Keep the two prompts in sync** — `kit/new-project-scaffold.md` is the canonical source for the shape and
+  convention set; mirror any structural change into `kit/knowledge-refactorer.md`'s Target Shape in the same PR.
 - **No invented facts** — don't add fictional example content; leave dirs/index rows ready instead.
 - **Match the existing style** — heading levels, table format, tone.
 
@@ -34,4 +34,4 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-Contributions are accepted under the project's [MIT License](LICENSE).
+Contributions are accepted under the project's [MIT License](../LICENSE).
