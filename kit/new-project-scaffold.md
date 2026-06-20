@@ -43,21 +43,47 @@ Once you have the **name + logic**, run a short guided intake **before** creatin
 - **Record every decision + its reason** in `architecture/tech-stack.md` (and seed `ports.md` /
   `versions.md`) — the stack lives there as a **recorded choice**, never hardcoded into this prompt.
 
-Cover at least:
+**Ask in tiers — don't dump them all.** Tier 1 always; Tier 2 only the items the logic implies; Tier 3
+you **state your default + reason and proceed** unless the user objects (don't block on them).
 
-| Ask | Recommend with a reason (example — adapt to the logic) | Where it lands |
+### Tier 1 — the spine (always establish)
+| Ask | Recommend with a reason (adapt to the logic) | Lands in |
 |---|---|---|
-| **Frontend** (is there a UI at all?) | "Vite + React for an SPA — fast dev, huge ecosystem" | `tech-stack.md` · `[Name]-Main/` |
+| **Project type / shape** — web app · API-only · CLI · library · mobile · desktop · data pipeline | drives whether `[Name]-Main` is frontend+backend or something else | `tech-stack.md` · structure |
+| **Frontend** (is there a UI?) | "Vite + React SPA — fast dev, huge ecosystem; Next.js if SEO/SSR matters" | `tech-stack.md` · `[Name]-Main/` |
 | **Backend / API** | "FastAPI if Python + async I/O; Nest/Express if JS-first" | `tech-stack.md` · `[Name]-Main/` |
-| **Datastore — stateful?** | "Postgres for relational; no DB if it's stateless" | `tech-stack.md` · `database-design.md` |
-| **Auth** (needed now?) | "defer until there are real users; cookie + JWT when needed" | `tech-stack.md` · dev-rules (auth) |
-| **Deploy / run target** | "Docker compose locally, one host to start" | `architecture/deploy.md` |
+| **Datastore — stateful?** | "Postgres for relational; none if stateless" | `tech-stack.md` · `database-design.md` |
+| **Users & access** — who uses it · roles/RBAC · multi-tenant? | "single role to start; add RBAC when a 2nd role appears" | `data-model.md` · dev-rules (auth) |
+| **Auth** (needed now?) | "defer until real users; cookie + JWT when needed" | `tech-stack.md` · dev-rules (auth) |
+| **Deploy / run target** | "Docker compose, one host to start" | `architecture/deploy.md` |
 | **Standalone apps** (a big feature shipping on its own? stateful?) | "build standalone-first if it can ship alone" | `standalone/` · lifecycle |
-| **License · i18n · repo host** | "MIT unless told; i18n on for a multi-language UI" | root files |
+| **MVP scope** — what's in v0.1 vs later | keeps the first slice small; the rest → plan | `process/improvement-plan.md` |
 
-Anything the user can't answer yet → record it as `status: design` / a `TODO` in the owning doc;
-**don't invent** an answer (no-invention rule). The stack may change later **job by job** — when it does,
-update `tech-stack.md` in the same commit.
+### Tier 2 — ask only if the logic implies it (each adds a dependency + often a secret)
+| Topic | Ask when… | Note |
+|---|---|---|
+| **External integrations / 3rd-party APIs** (payment · email/SMS · maps · OAuth) | the feature needs them | each → a key; record in `tech-stack.md`, store per the secret rule |
+| **AI / LLM usage** | it calls an LLM / embeddings | provider + where the key lives (gitignored env, **never** the frontend) |
+| **File / media storage** | it stores uploads / images / files | object storage (S3 / MinIO) vs local disk |
+| **Background jobs / queue / scheduler** | long tasks · cron · retries | worker + queue (arq / celery / bullmq) |
+| **Realtime** | live updates · chat · presence | WebSocket or SSE |
+| **Caching** | hot reads · rate limits | Redis |
+| **Notifications** | email / push / SMS to users | provider + templates |
+| **Data sensitivity / compliance** | stores PII · payments · health data | PDPA/GDPR — minimize, encrypt, document retention |
+
+### Tier 3 — sensible defaults (state the default + reason, proceed unless they care)
+Runtime + version + package manager (Node LTS / pnpm · Python + uv/poetry) · **ORM + migrations**
+(Prisma / SQLAlchemy + Alembic) · **testing** framework + the `test_policy` · **lint / format**
+(ESLint + Prettier / Ruff) · **CI checks** (lint · test · docs-lint · the no-hardcode guard) ·
+**observability** (structured logs · error tracking) · **secrets mechanism** (gitignored env now;
+secret manager for prod) · **environments** (dev · UAT · prod + the UAT↔prod promotion model) ·
+**i18n** · **license** (MIT default) · **repo host** · budget / hosting constraints · domain / TLS ·
+existing assets to reuse (brand · design system · code).
+
+Anything the user can't answer yet → record as `status: design` / a `TODO` in the owning doc; **don't
+invent** an answer (no-invention rule). Integrations / AI / storage answers also feed the
+**secret-handling rule** — list which keys exist + where they live. The stack may change later
+**job by job** — update `tech-stack.md` in the same commit when it does.
 
 ## Target structure (create this)
 
