@@ -93,7 +93,13 @@ lives in `[Name]-Docs/docs/`, never in a README or the router.
 1. **Reuse before you build** — search for an existing helper/pattern first.
 2. **No hardcode** — settings are config-driven (editable from a tools/admin surface + DB, not baked
    into env/frontend). **Secrets live only in gitignored env files** (commit `*.example` only) behind a
-   **prod boot-guard** that refuses to start on dev defaults. **UI text is data-driven (i18n)** — screens
+   **prod boot-guard** that refuses to start on dev defaults. **Keys/secrets — AI handling (any source,
+   not only `.env`):** treat every credential (API key, token, password, private key, connection string)
+   as sensitive *wherever it appears* — `.env`, a config file, an MCP config, a pasted snippet, a log,
+   command output. Never **print/echo/log/paste** a real value (redact to `****`), never **hardcode** or
+   **commit** one (only `*.example` placeholders); a real secret never goes in a browser-shipped frontend
+   env (`VITE_*`/`NEXT_PUBLIC_*` etc. ship to the client). If you find a key committed, logged, or in the
+   bundle → **flag it and treat it as compromised (rotate)**. **UI text is data-driven (i18n)** — screens
    call `t(key)`, never hardcoded user-facing strings (intentionally non-English *content* stays as
    content, not keyed).
 3. **Registries first** — read/update `ports.md` + `versions.md` in the same commit.

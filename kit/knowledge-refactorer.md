@@ -66,6 +66,10 @@ propose changes, show a before→after map, and never silently lose or invent kn
 - **No router / no progressive disclosure** → build/repair the single shared `CLAUDE.md` (below).
 
 ## Non-Destructive Guardrails
+- **Never expose a secret.** If a file holds a real credential (API key, token, password, private key,
+  connection string) — in `.env`, a config file, an MCP config, or anywhere else — never reproduce its
+  value in your output, a refactored file, or a commit (redact to `****`); keep it in a gitignored env
+  file or secret manager read via config, and flag it for rotation if it was committed or logged.
 - Never delete content without relocating it; account for every line of the original.
 - Never invent facts to fill structure. If a section has no source, leave it empty and note it.
 - When merging duplicates, keep the most complete/recent version and note what was dropped.
