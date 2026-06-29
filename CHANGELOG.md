@@ -6,18 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- **Renamed the "Standalone" line → "Plugin"** across the kit for one consistent vocabulary: `[Name]-Standalone`
-  → `[Name]-Plugin`, the `standalone/` docs folder → `plugin/`, and "standalone lifecycle / standalone-first"
-  → "plugin lifecycle / plugin-first" in `kit/new-project-scaffold.md`, `kit/knowledge-refactorer.md`,
-  `kit/principles.html`, and the README. The lifecycle semantics are unchanged (build-independently-first →
-  gated promotion → dependency direction main→plugin). Earlier released entries keep their original wording.
+## [0.3.0] - 2026-06-29
 
 ### Added
 - **`examples/plugin-architecture/`** — a worked Strict Full Plugin Architecture example: an enforceable
   `system-design.md`, a runnable `reference/` skeleton (Core contract + `inventory`/`order` plugins + the App
   composition root), and two copy-paste CI gates (`manifest.schema.json` + a `dependency-cruiser` config that
   blocks plugin→plugin imports). Linked from a new README **Examples** section.
+
+### Changed
+- **Renamed the "Standalone" line → "Plugin"** across the kit for one consistent vocabulary: `[Name]-Standalone`
+  → `[Name]-Plugin`, the `standalone/` docs folder → `plugin/`, and "standalone lifecycle / standalone-first"
+  → "plugin lifecycle / plugin-first" in `kit/new-project-scaffold.md`, `kit/knowledge-refactorer.md`,
+  `kit/principles.html`, and the README. The lifecycle semantics are unchanged (build-independently-first →
+  gated promotion → dependency direction main→plugin). Earlier released entries keep their original wording.
+- README intro + "What you get" now list the worked example; **Contents** nav added for one-page browsing.
+- **Line endings normalized to LF repo-wide** via `.gitattributes` (`* text=auto eol=lf`), ending the CRLF
+  churn and restoring the `docs-lint` run.
 
 ## [0.2.1] - 2026-06-20
 
@@ -68,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supply-chain hardening: **OpenSSF Scorecard** workflow, **Dependabot** (GitHub Actions), all CI actions
   pinned by commit SHA.
 
-[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/hellOoSaksit/ai-project-scaffold/releases/tag/v0.1.0
