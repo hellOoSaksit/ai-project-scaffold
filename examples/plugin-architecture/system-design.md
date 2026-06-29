@@ -1,0 +1,283 @@
+---
+title: System design — Strict Full Plugin Architecture
+type: reference
+status: active
+keywords: [plugin, architecture, core, isolation, event-bus, dependency-injection, manifest, lifecycle, versioning, fault-isolation, saga, contract-testing, security, observability]
+related: [./README.md, ../../kit/new-project-scaffold.md]
+summary: >
+  Reference design for a strict Core + Plugins application. The Core provides infrastructure only; every
+  business feature is an independent, self-contained plugin that can be removed without breaking the Core.
+  Plugins never import each other — they communicate only through Core interfaces, the Event Bus, or shared
+  services resolved via DI. This is the enforceable contract: responsibilities, the plugin manifest, load
+  order, versioning, fault isolation, namespacing, shared-data ownership, security boundaries, contract
+  testing, observability, and the CI gates that make every rule real instead of aspirational.
+updated: 2026-06-29
+---
+
+# System Design — Strict Full Plugin Architecture
+
+> **The one litmus test.** *Any plugin can be removed and the Core still boots, and every other plugin still
+> works.* Every rule below exists to keep that true. If it is ever false, the architecture is broken — fix
+> the coupling, don't work around it.
+
+## 1. High-level structure
+
+```
+Application
+├── Core                         # infrastructure only — knows NO business feature
+│   ├── Plugin Loader            # discovery → dependency resolution → ordered lifecycle
+│   ├── Router · Event Bus · Service Container (DI)
+│   ├── Auth (authn) · Authorization (authz) framework
+│   ├── Config · Database Abstraction · Cache · Logging · Telemetry
+│   ├── Shared Interfaces · Shared UI · Layout · Theme · i18n · Notification
+│   └── Shared Domain Services   # cross-cutting entities used by many plugins (e.g. User) — §7
+│
+└── Plugins/                     # one self-contained vertical slice per feature
+    ├── CRM/ · Chat/ · Inventory/ · Report/ · Dashboard/ · AI/ ...
+```
+
+A plugin owns its **full vertical slice**: backend (api · controllers · services · models · migrations ·
+seeds · repositories · validation · jobs · events) + frontend (pages · components · routes · assets · i18n ·
+state) + system (manifest · config · permissions · commands · listeners · tests).
+
+## 2. The litmus rules (MUST)
+
+1. **Core contains zero business logic.** No feature pages, APIs, services, tables, routes, permissions, or
+   config in Core. Core is generic and reusable across products.
+2. **A plugin is removable.** Deleting a plugin folder (and running its migrations down) leaves Core and
+   every *other* plugin working. If removing A breaks B, they are illegally coupled.
+3. **No plugin-to-plugin imports.** A plugin MUST NOT import another plugin's classes, types, or modules.
+   Cross-feature interaction uses exactly one of the three sanctioned channels (§5).
+4. **Extend, never modify.** Add features as plugins; never edit the Core to add a feature (Open/Closed).
+
+## 3. The plugin contract — manifest
+
+Every plugin ships a declarative `manifest` the Loader reads **before any plugin code runs**. This is what
+makes discovery, ordering, versioning, namespacing, and security enforceable instead of hopeful.
+
+```jsonc
+// plugins/CRM/manifest.json
+{
+  "id": "crm",                       // globally unique — also the MANDATORY namespace prefix (§6)
+  "name": "CRM",
+  "version": "1.4.0",                // plugin's own semver
+  "coreVersion": "^2.0.0",           // Core API range it is compatible with (§4)
+  "dependencies": ["contacts"],      // plugin ids that MUST boot first (§4)
+  "optionalDependencies": ["ai"],    // used if present, degraded-but-functional if absent
+  "provides": ["crm.LeadService"],   // shared contracts this plugin registers into the container
+  "consumes": ["core.User", "contacts.ContactService"], // contracts it resolves via DI (§5, §9-security)
+  "permissions": ["crm.view", "crm.edit"],   // all prefixed with id (§6)
+  "routes": ["/crm/*"],
+  "events": { "emits": ["crm.lead.created"], "listens": ["billing.invoice.paid"] },
+  "config": { "schema": "./config.schema.json" }, // validated config + feature flags (§11)
+  "migrations": "./database/migrations"
+}
+```
+
+The Loader **refuses boot** when: `coreVersion` is incompatible · a hard `dependencies` entry is missing ·
+a declared `permission`/`route`/`event` collides with another plugin · a key is not prefixed with `id` · a
+`consumes` entry was never `provide`d by anyone.
+
+## 4. Load order, dependency resolution & versioning
+
+- **Discovery is automatic; order is computed.** The Loader reads every manifest, builds a dependency graph
+  from `dependencies`, **topologically sorts** it, then: runs **`register()` for all** plugins first (so all
+  `provides` exist in the container), then **`boot()` in dependency order**.
+- **Cycle = hard failure.** A dependency cycle (A→B→A) fails boot with a clear, named error. Cycles are an
+  architecture violation, not a runtime problem to paper over.
+- **Version compatibility.** Each plugin declares `coreVersion`; the Loader won't load a plugin whose range
+  excludes the running Core. Plugin↔plugin compatibility flows through `dependencies` + the consumed
+  contract's semver. Record every plugin + Core version in `architecture/versions.md` (registry rule).
+- **Migration ordering.** Each plugin owns its migrations, but they **run in plugin dependency order** so a
+  foreign key into an upstream table never precedes that table. Down-migrations run in reverse.
+
+## 5. Communication — the only three channels
+
+```
+Plugin ──▶ Core Interface ──▶ Plugin         synchronous contract, resolved via DI (needs an answer now)
+Plugin ──▶ Event Bus       ──▶ Plugin         async, fire-and-forget, publisher ignorant of subscribers
+Plugin ──▶ DI Container    ──▶ Shared Service a Core-owned or plugin-provided contract
+```
+
+- **Prefer events** for anything that doesn't need a synchronous answer — keeps coupling loose, cohesion
+  high.
+- **Contracts are owned & versioned.** A consumed interface (`contacts.ContactService`) is a *published
+  contract*; breaking it is a **major** bump of the owning plugin, coordinated through `dependencies`.
+- **Eventual consistency is explicit.** A flow that spans plugins (Order → Inventory → Payment) is
+  event-driven and therefore eventually consistent. A multi-step write that must not partially apply uses a
+  **saga with compensating actions**; never wrap cross-plugin writes in one DB transaction.
+
+```
+Saga example — place order (each step is one plugin, linked only by events):
+  orders.place ──▶ orders.created
+                     └▶ inventory.reserve ──▶ inventory.reserved
+                                                └▶ billing.charge ──▶ billing.charged ──▶ orders.confirm
+   on billing.failed ──▶ inventory.release  (compensating action)  ──▶ orders.cancel
+```
+
+## 6. Namespacing — no silent collisions
+
+Every globally-visible key a plugin registers — **route · permission · event name · menu id · config key ·
+DI token · DB schema/table prefix** — MUST be prefixed with the plugin `id`:
+
+| Kind | Good | Bad |
+|---|---|---|
+| Permission | `crm.lead.edit` | `edit` |
+| Event | `crm.lead.created` | `leadCreated` |
+| Route | `/crm/leads` | `/leads` |
+| DB table | `crm_leads` (or schema `crm`) | `leads` |
+| DI token | `crm.LeadService` | `LeadService` |
+
+The Loader validates prefixes at boot; a collision is a boot failure, not a runtime surprise.
+
+## 7. Shared data & cross-cutting entities
+
+The rule "never touch another plugin's tables" leaves one gap: entities **many** plugins need (User, Tenant,
+Money, AuditLog). Resolve it explicitly:
+
+- A widely-shared entity is **owned by Core** (or a dedicated Shared Domain Service), never by a feature
+  plugin. Plugins consume it via a Core interface (`core.User`) — never by reading its table.
+- A plugin needing *another plugin's* data reads it through that plugin's **published service contract**
+  (`contacts.ContactService.find(id)`), never via SQL into `contacts_*`.
+- Cross-feature reporting that genuinely needs joins uses a **read model / projection** fed by events, not
+  direct cross-schema queries.
+
+## 8. Fault isolation
+
+The Core must survive a misbehaving plugin.
+
+- Each lifecycle call (`register`/`boot`/`shutdown`) runs inside a **boundary**: an exception is caught,
+  logged with the plugin id, and the plugin is marked **degraded** — it does not crash the Core or other
+  plugins (unless a hard dependant declared it required, in which case the dependant degrades too).
+- Event Bus delivery is **isolated**: a failing subscriber never fails the publisher. Synchronous contract
+  calls are guarded with **timeouts + circuit breakers** for anything that can block.
+- Every plugin gets **scoped logging + metrics** tagged by plugin id, so failures are attributable.
+
+## 9. Security boundaries (NEW — least privilege between plugins)
+
+Isolation is also a security property, not only a maintainability one.
+
+- **Capability, not ambient authority.** A plugin can resolve only the contracts it declared in `consumes`;
+  the container refuses an undeclared token. No plugin gets a god-object handle to the whole system.
+- **Authz at the contract edge.** Every cross-plugin call and every route carries the caller's permission
+  context; the Authorization framework checks the namespaced permission (`crm.lead.edit`) — a plugin can't
+  silently act with another plugin's rights.
+- **Data-scope enforcement.** Shared services apply tenant / row-level scoping centrally (§7), so a plugin
+  can't read another tenant's data by crafting an id.
+- **Secrets per the kit rule.** Plugin secrets live only in gitignored env behind the prod boot-guard;
+  never in the manifest, never in a browser-shipped frontend bundle.
+
+## 10. Lifecycle
+
+```
+register()   register services/contracts into the DI container — NO cross-plugin calls yet
+boot()       wire up routes · menus · permissions · listeners · scheduled tasks — in dependency order
+shutdown()   release resources · flush · deregister — in reverse dependency order
+enable()/disable()   toggle a plugin at runtime without redeploy (§11) — idempotent
+```
+
+## 11. Configuration, feature flags & runtime enable/disable (NEW)
+
+- **Config is schema-validated** (`config.schema.json`) and **config-driven, not hardcoded** (kit no-hardcode
+  rule) — read only from a single settings object, editable from an admin surface + DB.
+- **Feature flags** gate risky paths inside a plugin so they ship dark and roll out gradually.
+- **Runtime toggle.** A plugin can be **disabled without a redeploy**: the Loader runs `disable()`,
+  unregisters its routes/menus/listeners, and — because nothing imports it directly — the rest keeps
+  running. Re-`enable()` is the inverse. This is the litmus rule (§2.2) made operational.
+
+## 12. Layering inside every plugin
+
+```
+HTTP / route layer  →  service / business-logic layer  →  repository / data-access layer
+```
+
+All data access lives in the repository layer (no queries in controllers); I/O is async where the platform
+supports it; config comes from one settings object. Keep this even in small plugins so they stay testable.
+
+## 13. Testing strategy (NEW — how isolation is proven, not assumed)
+
+| Level | Scope | Guarantees |
+|---|---|---|
+| **Unit** | service / repository in one plugin, deps mocked | business logic correctness |
+| **Integration** | one plugin against a real DB + in-memory bus | migrations + repository + events wire up |
+| **Contract (consumer-driven)** | the *consuming* plugin pins the shape of a `consumes` contract; the *providing* plugin's CI verifies it | a provider can't break a consumer silently across the no-import boundary |
+| **Isolation** | boot the app with the plugin **removed** | proves §2.2 — Core + others still boot (CI matrix) |
+| **E2E (saga)** | the cross-plugin flow incl. the failure path | compensating actions actually compensate |
+
+Contract tests are the linchpin: because plugins never import each other, the *only* coupling is the
+published contract — so that is exactly what CI must pin.
+
+## 14. Observability (NEW)
+
+- **Structured logs** tagged `{plugin.id, request.id, tenant.id}` — per-plugin filterable.
+- **Metrics per plugin** — request rate / errors / latency, plus lifecycle (boot time, degraded count).
+- **Distributed tracing across the bus** — a trace id propagates through events so a saga is one trace, not
+  N disconnected spans. This is how you debug an eventually-consistent flow.
+- **Health** — `/health` reports Core + each plugin's state (`active` / `degraded` / `disabled`) and version
+  (from the manifest, never hardcoded → ties to `versions.md`).
+
+## 15. Enforcement — every rule is a CI gate
+
+Rules that only live in prose rot. Each becomes an automated gate:
+
+| Rule | Gate |
+|---|---|
+| No plugin-to-plugin imports (§2.3) | dependency-cruiser: fail on any import crossing `plugins/<a>/ → plugins/<b>/` |
+| Core has no business logic (§2.1) | lint: `core/` MUST NOT import from `plugins/` |
+| Manifest valid (§3) | JSON-schema-validate every `manifest.json` |
+| Namespacing (§6) | Loader self-check at boot + CI scan of registered keys for the `id` prefix |
+| Dependency graph acyclic (§4) | CI builds the graph, fails on a cycle |
+| Removability (§2.2) | CI matrix boots the app with each plugin removed |
+| Contracts honored (§13) | consumer-driven contract tests run in the provider's pipeline |
+| Version config-driven, not hardcoded | kit no-hardcode guard; version flows manifest → `/health` |
+
+## 16. Concrete plugin folder shape
+
+```
+plugins/CRM/
+├── manifest.json          # the contract (§3)
+├── config.schema.json     # validated config + feature flags (§11)
+├── index.ts               # exports register() · boot() · shutdown() · enable() · disable()
+├── backend/
+│   ├── api/ · controllers/ · services/ · repositories/ · models/ · validation/ · jobs/ · events/
+│   └── database/ { migrations/ · seeds/ }
+├── frontend/
+│   ├── pages/ · components/ · routes/ · state/ · assets/ · i18n/
+└── tests/
+    ├── unit/ · integration/ · contract/   # contract/ pins each consumed contract (§13)
+```
+
+## 17. Design principles (the why)
+
+SOLID · Dependency Inversion (depend on interfaces, not implementations) · Interface Segregation ·
+Event-Driven Design · Loose Coupling / High Cohesion · Separation of Concerns · Open/Closed ·
+Feature-Based Architecture · Composition over inheritance · Least Privilege · DRY · KISS.
+
+## 18. Definition of Done — a new plugin (NEW)
+
+A plugin is "done" only when **all** are true:
+
+- [ ] `manifest.json` complete & schema-valid (`id`, `coreVersion`, `dependencies`, `provides`/`consumes`).
+- [ ] Every registered key (route / permission / event / table / DI token) is `id`-prefixed.
+- [ ] No import crosses into another plugin; cross-feature access is via interface or event only.
+- [ ] Owns its migrations + seeds; touches no other plugin's tables.
+- [ ] Unit + integration + **contract** tests pass; the removal-isolation matrix still boots.
+- [ ] Any cross-plugin write flow has a saga + compensating action.
+- [ ] Config is schema-validated & config-driven; secrets in gitignored env; nothing hardcoded.
+- [ ] Logs/metrics tagged by plugin id; version surfaced at `/health`; entry added to `versions.md`.
+- [ ] The plugin can be **disabled at runtime** and the rest of the app keeps working.
+
+## 19. Review checklist (apply on every change)
+
+For each finding state **why it's a problem · severity · suggested fix · the better architecture**:
+
+- [ ] Business logic leaking into Core?
+- [ ] A plugin importing another plugin directly (vs interface/event)?
+- [ ] Circular dependency between plugins?
+- [ ] A plugin reading/writing another plugin's tables directly?
+- [ ] Un-namespaced route / permission / event / config key?
+- [ ] Manifest missing `coreVersion` / `dependencies` for a real dependency?
+- [ ] A cross-plugin write flow with no saga / compensation?
+- [ ] A consumed contract with no contract test pinning it?
+- [ ] Could this plugin be removed (or disabled) without breaking the system? (if no → fix)
+- [ ] Shared code duplicated across plugins that should move to Core?
