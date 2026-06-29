@@ -47,8 +47,9 @@ do the rules live, how does an agent find the one doc it needs, how do you stop 
 files. This kit answers that with a **proven, opinionated structure** you can drop onto any project — from
 a solo app to 100+ services — without reinventing the layout each time.
 
-It ships as **two system prompts** (one to scaffold a new project, one to refactor an existing one) plus a
-**visual overview**. Everything is embedded inline — no external reference repo required.
+It ships as **two system prompts** (one to scaffold a new project, one to refactor an existing one), a
+**visual overview**, and a **worked example** — a full plugin architecture with a runnable reference and
+copy-paste CI gates. The prompts are self-contained and embedded inline — no external reference repo required.
 
 ## Who is this for?
 
@@ -71,7 +72,8 @@ docs, multiple apps, or AI agents working in it.
 - **Job-first `docs/`** — grouped by job (architecture · features · process · plugin), every file with `title/type/status/keywords/related/summary` frontmatter for RAG.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
 - **Plugin lifecycle** — build big features as separate apps, then fold back into main on gated promotion.
-- **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI.
+- **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI; LF normalized repo-wide via `.gitattributes`.
+- **A worked example** — a full [plugin-architecture](examples/plugin-architecture/) build (Core + Plugin + App + Docs) with an enforceable `system-design.md`, a runnable reference skeleton, and two copy-paste CI gates (manifest schema + a no-plugin→plugin-imports check).
 
 ## 🔒 Security & secret handling
 
@@ -205,7 +207,7 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 This kit is **prompts, not a dependency** — there's nothing to compile or `npm install`. You "install" it by
 dropping the prompt into your AI agent. Pick whichever fits:
 
-**A — Clone the repo** (gets everything: both prompts, `kit/principles.html`, and the `docs-lint` suite):
+**A — Clone the repo** (gets everything: both prompts, `kit/principles.html`, the `examples/`, and the `docs-lint` suite):
 
 ```bash
 git clone https://github.com/hellOoSaksit/ai-project-scaffold.git
