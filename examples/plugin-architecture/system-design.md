@@ -131,6 +131,60 @@ Saga example — place order (each step is one plugin, linked only by events):
    on billing.failed ──▶ inventory.release  (compensating action)  ──▶ orders.cancel
 ```
 
+### 5.1 Collaboration patterns — when plugin A needs plugin B
+
+Two plugins living in the same system **never import each other** (§2.3). Pick the channel by what the
+interaction actually needs. Worked example: **Order** (plugin A) must reserve stock from **Inventory**
+(plugin B).
+
+**Pattern A — needs an answer *now* (synchronous) → service contract via DI.**
+B publishes a contract; A declares it as both a dependency (for load order, §4) and a consumed token.
+
+```jsonc
+// plugins/inventory/manifest.json
+{ "id": "inventory", "provides": ["inventory.StockService"] }
+
+// plugins/order/manifest.json
+{ "id": "order",
+  "dependencies": ["inventory"],          // Loader boots inventory first (§4)
+  "consumes": ["inventory.StockService"]  // resolved via DI — the ONLY handle Order gets
+}
+```
+```ts
+class OrderService {
+  constructor(private stock: StockService) {}          // injected interface, never an import
+  place(o) { return this.stock.reserve(o.items); }     // calls the contract, not a concrete class
+}
+// ❌ import { ReserveService } from "../../inventory/..."   ← plugin→plugin import, forbidden
+```
+
+**Pattern B — fire-and-react, eventual is fine → Event Bus (preferred, loosest).**
+A emits; B reacts; neither knows the other exists. Use a saga + compensation for multi-step writes (§5).
+
+```
+order.placed ──▶ inventory (listens) → reserve ──▶ inventory.reserved / inventory.failed
+                                                       └▶ order (listens) → confirm / cancel
+```
+
+**Pattern C — the data is shared by neither → it belongs to Core (§7).**
+A widely-used entity (User, Tenant, Money) is owned by a Core Shared Domain Service; both plugins consume
+`core.User`, so there is no A↔B coupling at all.
+
+| What the interaction needs | Channel |
+|---|---|
+| An immediate return value (validate stock before confirming) | **Service contract + DI** (Pattern A) |
+| React after the fact / can be eventual | **Event Bus** (Pattern B) — *default* |
+| A cross-cutting entity owned by neither plugin | **Core shared service** (Pattern C) |
+| A multi-step write that must not partially apply | **Saga + compensating action** (§5) |
+
+> **Litmus check before you wire them (§2.2):** *"Remove plugin B — does plugin A still work, even
+> degraded?"* **Yes →** the split is right; collaborate via contract/event above. **No →** they are one
+> bounded context; **merge them into a single plugin** (with internal sub-modules) rather than coupling two.
+
+Running both together is the **App**'s job (§1.1): enable `order` + `inventory` in `plugins.config`, and the
+Loader topologically boots `inventory` before `order`. A **consumer-driven contract test** (§13) pins
+`inventory.StockService` so Inventory can't break Order silently across the no-import boundary.
+
 ## 6. Namespacing — no silent collisions
 
 Every globally-visible key a plugin registers — **route · permission · event name · menu id · config key ·
