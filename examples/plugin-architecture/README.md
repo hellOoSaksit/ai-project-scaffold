@@ -24,10 +24,11 @@ follows it across three repos: `[Name]-Core/` (the host), `[Name]-Plugin/` (the 
 > [`manifest.schema.json`](reference/manifest.schema.json) and
 > [`.dependency-cruiser.cjs`](reference/.dependency-cruiser.cjs) (no plugin→plugin imports).
 
-> **Naming note.** This example uses **`Core` / `Plugin`** instead of the kit's generic `Main` / `Standalone`
-> labels, because the whole architecture is plugin-based and those words are the industry standard (host
-> `Core` + `Plugin`s, as in VSCode / WordPress / Strapi). The layout is identical to the scaffold's — only
-> the two repo names are specialized to the domain.
+> **Naming note.** The kit's generic repos are `[Name]-Main` / `[Name]-Docs` / `[Name]-Plugin`. This example
+> specializes two things: it renames the host `Main` → **`Core`** (it provides infrastructure only, the
+> industry-standard term — VSCode / WordPress / Strapi), and adds an explicit **`App`** repo (the composition
+> root that assembles + runs the system, §1.1). The **`Plugin`** line matches the kit as-is. The layout is
+> otherwise identical to the scaffold's.
 
 ---
 
@@ -143,7 +144,7 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 ## Use it
 
 1. Run the [new-project scaffolder](../../kit/new-project-scaffold.md) — answer the intake, pick your stack;
-   tell it to use the `Core` / `Plugin` / `App` repo names instead of `Main` / `Standalone`.
+   keep the kit's `Plugin` line, rename the host `Main` → `Core`, and add an `App` repo for the run/assembly root.
 2. Drop [system-design.md](system-design.md) into `[Name]-Docs/docs/architecture/` and move the MUST/MUST NOT
    rules into `[name]-dev-rules.md`.
 3. Build `[Name]-Core/` (infra only) and your first `[Name]-Plugin/<id>/` to the contract; wire the §15 CI gates.

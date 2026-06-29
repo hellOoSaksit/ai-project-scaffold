@@ -2,12 +2,12 @@
 title: New-project scaffolder (spin up a project from zero)
 type: prompt
 status: active
-keywords: [scaffold, new project, bootstrap, template, umbrella, main, docs, standalone, conventions, portable]
+keywords: [scaffold, new project, bootstrap, template, umbrella, main, docs, plugin, conventions, portable]
 related: [./knowledge-refactorer.md, ../README.md, ./principles.html]
 summary: >
   System prompt to bootstrap a brand-new project from zero with a proven, AI-friendly structure:
-  one umbrella `[Name]-Project/` holding `[Name]-Main`, `[Name]-Docs`, `[Name]-Standalone`, plus the
-  full conventions system (router, frontmatter, registries, standalone lifecycle, runbooks, docs-lint).
+  one umbrella `[Name]-Project/` holding `[Name]-Main`, `[Name]-Docs`, `[Name]-Plugin`, plus the
+  full conventions system (router, frontmatter, registries, plugin lifecycle, runbooks, docs-lint).
   Self-contained — everything the scaffolder needs is described inline.
 updated: 2026-06-20
 ---
@@ -41,7 +41,7 @@ over existing work that isn't recoverable.
 - **`[Name]`** — the project name (e.g. `Acme`).
 - **What it builds (the logic)** — one or two lines on what the project does, so docs aren't empty scaffolding.
 
-That's the **minimum to start**. Everything else (tech stack, datastore, auth, deployment, standalone
+That's the **minimum to start**. Everything else (tech stack, datastore, auth, deployment, plugin
 apps) you **ask** in the intake below — you do **not** assume it. This prompt **does not fix a stack**:
 the layout/conventions are fixed, the stack is a **per-project, job-by-job** decision.
 
@@ -71,7 +71,7 @@ you **state your default + reason and proceed** unless the user objects (don't b
 | **Users & access** — who uses it · roles/RBAC · multi-tenant? | "single role to start; add RBAC when a 2nd role appears" | `data-model.md` · dev-rules (auth) |
 | **Auth** (needed now?) | "defer until real users; cookie + JWT when needed" | `tech-stack.md` · dev-rules (auth) |
 | **Deploy / run target** | "Docker compose, one host to start" | `architecture/deploy.md` |
-| **Standalone apps** (a big feature shipping on its own? stateful?) | "build standalone-first if it can ship alone" | `standalone/` · lifecycle |
+| **Plugin apps** (a big feature shipping on its own? stateful?) | "build plugin-first if it can ship alone" | `plugin/` · lifecycle |
 | **MVP scope** — what's in v0.1 vs later | keeps the first slice small; the rest → plan | `process/improvement-plan.md` |
 
 ### Tier 2 — ask only if the logic implies it (each adds a dependency + often a secret)
@@ -117,8 +117,8 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 │                                #   "file lists" of `[name](path): note` links — order per spec, no other headings
 ├── [Name]-Main/                 # the main application (frontend + backend, or whatever the app is)
 │   └── README.md                # GitHub overview for humans — NO project knowledge, NOT an index
-├── [Name]-Standalone/           # the standalone line — big features as their own apps (may be empty at first)
-│   └── <app>/                   # one folder per standalone app, when it exists
+├── [Name]-Plugin/           # the plugin line — big features as their own apps (may be empty at first)
+│   └── <app>/                   # one folder per plugin app, when it exists
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
     └── docs/                    # ALL project knowledge, centralized, English — every file has frontmatter
@@ -128,14 +128,14 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
         ├── architecture/        # system-design · data-model · database-design · tech-stack · deploy · risks
         │                        #   + registries: ports.md (host ports) · versions.md (app versions / UAT↔Prod drift)
         ├── features/            # 1 file = 1 feature
-        ├── standalone/          # 1 subfolder = 1 standalone app (README + overview/errors/decisions/integration)
+        ├── plugin/          # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts (scaffolder + refactorer) + principles.html (structure overview)
-        └── templates/           # copy-to-create scaffolds (frontmatter, feature, standalone, changelog)
+        └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
         scripts/docs-lint.py     # (sibling of docs/) link/anchor/frontmatter validator → run in CI
 ```
 
-> Use the uniform `[Name]-{Main,Docs,Standalone}` naming for the three child repos under the umbrella.
+> Use the uniform `[Name]-{Main,Docs,Plugin}` naming for the three child repos under the umbrella.
 > Everything else follows the layout above 1:1.
 
 > **Why job-first, not Diataxis.** Diátaxis (tutorial · how-to · reference · explanation) organizes docs
@@ -194,16 +194,16 @@ GitHub `README.md` overviews. `llms.txt` is not markdown — it follows the llms
 **4. Registries (single source of truth).** `architecture/ports.md` (host ports — offset so all apps
 run at once) and `architecture/versions.md` (each app's version + UAT↔Production drift).
 
-**5. Standalone lifecycle** — build big features standalone-first → drop login → own DB+Docker if
+**5. Plugin lifecycle** — build big features plugin-first → drop login → own DB+Docker if
 stateful → re-integration-ready → versioned (`vMAJOR.MINOR` in `config` → `/health`) → **gated promotion**
-(UAT may run ahead; promote into main only on explicit approval) → **dependency direction main→standalone**
+(UAT may run ahead; promote into main only on explicit approval) → **dependency direction main→plugin**
 (main is upstream for shared libs/engine; non-breaking main updates propagate down). Document this in
-`[name]-dev-rules.md` (§ standalone) + a `standalone/README.md` contract.
+`[name]-dev-rules.md` (§ plugin) + a `plugin/README.md` contract.
 
 **6. Architecture — layering + data model.** Keep **separation of concerns**: a thin HTTP/route layer →
 a service/business-logic layer → a data/repository layer where **all** data access lives (one place, no
 queries scattered elsewhere); every I/O call async where the platform supports it; read config only from
-a single settings object. Keep this layering **even inside standalone apps** so merge-back stays mechanical
+a single settings object. Keep this layering **even inside plugin apps** so merge-back stays mechanical
 (a stateless app may skip the data layer; a stateful one keeps it). **Database/ER:** a `database-design.md`
 (clarity + keys + normalization + indexing + when to split a DB on a bounded-context seam) + an as-built
 `data-model.md` updated with every schema change.
@@ -211,11 +211,11 @@ a single settings object. Keep this layering **even inside standalone apps** so 
 **7. Process docs** — `session-handoff.md` (status + resume; keep a "NOW" TL;DR on top), `playbook.md`
 (work loop), `lessons.md` (decisions/traps), `ai-runbooks.md` (R1 pause/resume · R2 new session/move
 machine · R3 remove lib/file · R4 audit deps · R5 incident/rollback · R6 release/deploy · R7 expose open
-standalone · **R8 create/manage a skill**).
+plugin · **R8 create/manage a skill**).
 
 **8. Enforcement** — ship `scripts/docs-lint.py` (frontmatter + link/anchor/related validator; make its
 output UTF-8-safe) and wire a CI workflow per repo (docs-lint for the docs repo; tests + a "version is
-config-driven, not hardcoded" guard for the app/standalone repos).
+config-driven, not hardcoded" guard for the app/plugin repos).
 
 **9. Skills** — when a multi-step workflow recurs (≥~3×) or is high-value, wrap it as
 `.claude/skills/<name>/SKILL.md` (frontmatter `name` + `description`=trigger; body **thin**, pointing to
@@ -234,7 +234,7 @@ the owning runbook/script — don't duplicate). Rule: see `ai-runbooks.md` R8.
    navigation map (H1 + blockquote summary + link-list) generated from the docs index.
 3. **docs index + dev-rules + GLOSSARY + templates + registries** — created with real frontmatter; the
    registries seed `[Name]-Main`'s ports/version; empty tables otherwise.
-4. **One starter feature/standalone doc** only if the project already has one — else leave the dirs +
+4. **One starter feature/plugin doc** only if the project already has one — else leave the dirs +
    index rows ready, not stubbed with fiction (the [knowledge-refactorer](knowledge-refactorer.md)'s
    no-invention rule applies).
 5. **docs-lint + CI** — copied and passing.

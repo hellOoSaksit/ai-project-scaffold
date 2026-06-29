@@ -115,7 +115,7 @@ summary: >
 updated: 2026-06-20   # the edit date
 ---
 ```
-The folder a file sits in (`architecture/`, `features/`, `process/`, `new-project/`, `standalone/`,
+The folder a file sits in (`architecture/`, `features/`, `process/`, `new-project/`, `plugin/`,
 `templates/`) is its **category**. Optional legacy fields (`domain`, `service`) may stay if present.
 Legacy docs lacking frontmatter → add it when you touch them; note any still missing in the
 before→after map. Start a new doc by copying the matching `templates/` scaffold.
@@ -155,8 +155,8 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 ├── llms.txt                     # LLM navigation map (llmstxt.org): H1 + blockquote summary + H2 link-lists
 ├── [Name]-Main/                 # the main application
 │   └── README.md                # GitHub overview (humans) — NO project knowledge, NOT an index, NO CLAUDE stub
-├── [Name]-Standalone/           # standalone apps (may be empty at first)
-│   └── <app>/                   # one folder per standalone app, when it exists
+├── [Name]-Plugin/           # plugin apps (may be empty at first)
+│   └── <app>/                   # one folder per plugin app, when it exists
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
     └── docs/                    # ALL project knowledge, centralized (English) — every file has frontmatter
@@ -166,10 +166,10 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
         ├── architecture/        # system-design · data-model · database-design · tech-stack · deploy · risks
         │                        #   + registries: ports.md (host ports) · versions.md (app versions / UAT↔Prod drift)
         ├── features/            # 1 file = 1 feature
-        ├── standalone/          # 1 subfolder = 1 standalone app (README + overview/errors/decisions/integration)
+        ├── plugin/          # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts + structure overview (this file lives here)
-        └── templates/           # copy-to-create scaffolds (frontmatter, feature, standalone, changelog)
+        └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
         scripts/docs-lint.py     # (sibling of docs/) link/anchor/frontmatter validator → run in CI
 ```
 

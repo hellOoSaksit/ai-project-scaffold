@@ -56,7 +56,7 @@ It ships as **two system prompts** (one to scaffold a new project, one to refact
 |---|---|
 | **Developer / engineer** starting a new project or repo | Bootstrap a clean, AI-friendly structure from commit one — no bikeshedding the layout. |
 | **Working with AI coding agents** (Claude Code, Cursor, Copilot, Codex, Gemini CLI…) | Get docs an agent navigates well: one router, `AGENTS.md`/`llms.txt` entry points, progressive disclosure, frontmatter for retrieval. |
-| **Tech lead / architect** standardizing several projects or teams | Install one proven, repeatable shape (umbrella + Main/Docs/Standalone) everyone inherits. |
+| **Tech lead / architect** standardizing several projects or teams | Install one proven, repeatable shape (umbrella + Main/Docs/Plugin) everyone inherits. |
 | **Team with messy / monolithic existing docs** | Refactor existing Markdown into the same architecture — non-destructively, with zero information loss. |
 | **Solo builder / indie hacker** | Skip reinventing structure; start with a battle-tested scaffold and grow from 1 to 100+ services. |
 
@@ -68,9 +68,9 @@ docs, multiple apps, or AI agents working in it.
 - **One shared `CLAUDE.md` router** — thin: always-on rules + a task router (progressive disclosure, not a wall of context).
 - **`AGENTS.md` entry point** — the de-facto standard read by 30+ agents; signal-dense build/test/run commands + boundaries.
 - **`llms.txt` navigation map** — [llmstxt.org](https://llmstxt.org/) format for LLM discovery.
-- **Job-first `docs/`** — grouped by job (architecture · features · process · standalone), every file with `title/type/status/keywords/related/summary` frontmatter for RAG.
+- **Job-first `docs/`** — grouped by job (architecture · features · process · plugin), every file with `title/type/status/keywords/related/summary` frontmatter for RAG.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
-- **Standalone lifecycle** — build big features as separate apps, then fold back into main on gated promotion.
+- **Plugin lifecycle** — build big features as separate apps, then fold back into main on gated promotion.
 - **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI.
 
 ## 🔒 Security & secret handling
@@ -102,7 +102,7 @@ the visual overview validated, and every internal link checked.
 | Dimension | Score | What was checked |
 |---|:--:|---|
 | **Structure / Clarity** | 5/5 | umbrella + job-first docs + progressive disclosure; single-root vs nested-monorepo justified |
-| **Completeness** | 5/5 | router · entry files · frontmatter · registries · standalone lifecycle · runbooks · enforcement · CI |
+| **Completeness** | 5/5 | router · entry files · frontmatter · registries · plugin lifecycle · runbooks · enforcement · CI |
 | **Best-practice alignment** | 5/5 | matches the **AGENTS.md** & **llms.txt** specs; acknowledges **Diátaxis** & the nested-monorepo pattern |
 | **Maintainability** | 5/5 | one canonical source + a bidirectional sync rule → **zero drift** between the two prompts |
 | **AI-readability** | 5/5 | frontmatter for retrieval · English · signal-dense entry files · intent encoded in `type:` |
@@ -158,7 +158,7 @@ instead of slowly rotting:
 - **One map, every time** — every task re-enters through the single `CLAUDE.md` router + `llms.txt`, so the agent navigates from the same map and doesn't wander or re-invent paths.
 - **It resumes, not restarts** — `process/session-handoff.md` carries the live status + a "resume here" prompt, updated each session, so the next session (or a different agent) picks up exactly where the last one stopped.
 - **It remembers its mistakes** — `process/lessons.md` is a running log of decisions made, traps hit *for real*, and known-but-unfixed risks, so the same wrong turn isn't taken twice.
-- **Recurring work is a runbook, not a guess** — `process/ai-runbooks.md` (R1–R8: pause/resume · move machine · remove a lib · audit deps · incident/rollback · release · expose a standalone · create a skill).
+- **Recurring work is a runbook, not a guess** — `process/ai-runbooks.md` (R1–R8: pause/resume · move machine · remove a lib · audit deps · incident/rollback · release · expose a plugin · create a skill).
 - **Drift can't pass silently** — `docs-lint` runs in CI and **fails** on a broken link/anchor or missing/invalid frontmatter, so the docs and their `related:` graph can't quietly fall out of sync with the code.
 - **Values can't drift** — single-source-of-truth registries (`ports.md`, `versions.md`), read + updated in the same commit; no duplicated numbers diverging across files.
 - **Change keeps the map true** — the rule "update the owning doc **and** its index in the same commit" (plus "one file = one concept" and "reuse before you build") bounds sprawl as the project scales.
@@ -169,7 +169,7 @@ instead of slowly rotting:
 
 | File | Use for |
 |---|---|
-| [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Standalone}` + every convention (router · frontmatter · registries · standalone lifecycle · runbooks · skills · enforcement). |
+| [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Plugin}` + every convention (router · frontmatter · registries · plugin lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
 
@@ -181,7 +181,7 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 |---|---|
 | [**Strict Full Plugin Architecture**](examples/plugin-architecture/) | A Core + Plugins app built **inside** the scaffold: a generic `Core` (infra only) + self-contained, removable feature `plugins` + an `App` that assembles and runs the whole system. Ships an enforceable [`system-design.md`](examples/plugin-architecture/system-design.md) and a [runnable reference](examples/plugin-architecture/reference/) with two copy-paste CI gates. |
 
-**The four repos it scaffolds** (specialising the kit's generic `Main` / `Standalone` names to the domain):
+**The four repos it scaffolds** (specialising the kit's generic `Main` / `Plugin` names to the domain):
 
 ```
 [Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt
