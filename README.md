@@ -31,6 +31,15 @@ AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-f
 
 ---
 
+## Contents
+
+- [What is this?](#what-is-this) · [Who is this for?](#who-is-this-for) · [What you get](#what-you-get)
+- [🔒 Security & secret handling](#-security--secret-handling) · [🏅 Quality review & benchmarks](#-quality-review--benchmarks) · [💸 Token economics](#-token-economics--measured-not-guessed) · [🧭 Won't drift as it grows](#-wont-drift-as-it-grows--and-it-remembers-its-mistakes)
+- [The kit](#the-kit) · [🧩 Examples](#-examples) · [Installation](#installation) · [Usage](#usage)
+- [📚 References & research](#-references--research) · [Contributing](#contributing) · [License](#license)
+
+---
+
 ## What is this?
 
 Setting up a project so that **AI coding agents stay accurate** is mostly an architecture problem: where
@@ -163,6 +172,33 @@ instead of slowly rotting:
 | [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Standalone}` + every convention (router · frontmatter · registries · standalone lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
+
+## 🧩 Examples
+
+Worked, opinionated applications of the kit — copy the shape, not just the idea.
+
+| Example | What it shows |
+|---|---|
+| [**Strict Full Plugin Architecture**](examples/plugin-architecture/) | A Core + Plugins app built **inside** the scaffold: a generic `Core` (infra only) + self-contained, removable feature `plugins` + an `App` that assembles and runs the whole system. Ships an enforceable [`system-design.md`](examples/plugin-architecture/system-design.md) and a [runnable reference](examples/plugin-architecture/reference/) with two copy-paste CI gates. |
+
+**The four repos it scaffolds** (specialising the kit's generic `Main` / `Standalone` names to the domain):
+
+```
+[Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt
+├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth)
+├── [Name]-Plugin/<id>/      # one self-contained feature per folder — removable, never imports another plugin
+├── [Name]-App/              # composition root — wires Core + chosen plugins, RUNS + integration-tests the system
+└── [Name]-Docs/docs/        # all knowledge (architecture/system-design.md lives here) + registries
+```
+
+**Why it matters** — the design is fully enforceable, not aspirational:
+
+- **One litmus rule** — delete any plugin and `Core` still boots and every other plugin still works (CI matrix).
+- **No plugin→plugin imports** — features talk only through a Core interface, the Event Bus, or a DI-resolved contract; a [`dependency-cruiser`](examples/plugin-architecture/reference/.dependency-cruiser.cjs) gate fails CI on a violation.
+- **Manifest contract** — a [JSON Schema](examples/plugin-architecture/reference/manifest.schema.json) drives load order, version compatibility, and namespacing; the App boots plugins in topological order.
+
+> Want another example (event-sourcing, multi-tenant SaaS, a CLI tool)? Open an issue — examples are the
+> fastest way to show the structure paying off on a real shape.
 
 ## Installation
 
