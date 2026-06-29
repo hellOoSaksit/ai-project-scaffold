@@ -23,7 +23,9 @@ updated: 2026-06-29
 ## 1. High-level structure
 
 ```
-Application
+App  (composition root)          # the ONLY place that assembles + runs the whole system — §1.1
+│    wires ▼ Core + the chosen ▼ Plugins, then boots them
+│
 ├── Core                         # infrastructure only — knows NO business feature
 │   ├── Plugin Loader            # discovery → dependency resolution → ordered lifecycle
 │   ├── Router · Event Bus · Service Container (DI)
@@ -39,6 +41,20 @@ Application
 A plugin owns its **full vertical slice**: backend (api · controllers · services · models · migrations ·
 seeds · repositories · validation · jobs · events) + frontend (pages · components · routes · assets · i18n ·
 state) + system (manifest · config · permissions · commands · listeners · tests).
+
+### 1.1 Composition root — the App (where the full system runs)
+
+Core is a framework and each plugin is a module; **neither runs on its own.** The **App** is the thin
+composition root that assembles them — it depends on Core, declares which plugins to load
+(`plugins.config`), and boots the whole thing. It is the only place that knows the concrete plugin *set*.
+
+- **Run the full system here.** The entrypoint loads Core, then `register()` / `boot()`s the enabled plugins
+  in dependency order (§4); the dev server / `docker compose up` lives here.
+- **Test the full system here.** Integration tests (Core + several plugins on a real DB + bus) and E2E saga
+  tests (§13) run against the assembled App. The removability matrix (§15) flips plugins on/off via this
+  config, proving the §2.2 invariant.
+- **It holds no business logic** (that's plugins) and **no infrastructure** (that's Core) — only wiring,
+  config, env/secrets, and the run + test harness. Keep it thin.
 
 ## 2. The litmus rules (MUST)
 
@@ -201,11 +217,12 @@ supports it; config comes from one settings object. Keep this even in small plug
 | **Unit** | service / repository in one plugin, deps mocked | business logic correctness |
 | **Integration** | one plugin against a real DB + in-memory bus | migrations + repository + events wire up |
 | **Contract (consumer-driven)** | the *consuming* plugin pins the shape of a `consumes` contract; the *providing* plugin's CI verifies it | a provider can't break a consumer silently across the no-import boundary |
-| **Isolation** | boot the app with the plugin **removed** | proves §2.2 — Core + others still boot (CI matrix) |
-| **E2E (saga)** | the cross-plugin flow incl. the failure path | compensating actions actually compensate |
+| **Isolation** | boot the **App** with the plugin **removed** (toggle its `plugins.config` entry) | proves §2.2 — Core + others still boot (CI matrix) |
+| **E2E (saga)** | the **App** assembled with all involved plugins; run the cross-plugin flow incl. the failure path | compensating actions actually compensate |
 
 Contract tests are the linchpin: because plugins never import each other, the *only* coupling is the
-published contract — so that is exactly what CI must pin.
+published contract — so that is exactly what CI must pin. **Integration / isolation / E2E levels run in the
+App** (§1.1) — the only place Core and multiple plugins are assembled together.
 
 ## 14. Observability (NEW)
 
@@ -231,10 +248,12 @@ Rules that only live in prose rot. Each becomes an automated gate:
 | Contracts honored (§13) | consumer-driven contract tests run in the provider's pipeline |
 | Version config-driven, not hardcoded | kit no-hardcode guard; version flows manifest → `/health` |
 
-## 16. Concrete plugin folder shape
+## 16. Concrete folder shapes
+
+**A plugin** (lives under `[Name]-Plugin/`):
 
 ```
-plugins/CRM/
+[Name]-Plugin/crm/
 ├── manifest.json          # the contract (§3)
 ├── config.schema.json     # validated config + feature flags (§11)
 ├── index.ts               # exports register() · boot() · shutdown() · enable() · disable()
@@ -246,6 +265,22 @@ plugins/CRM/
 └── tests/
     ├── unit/ · integration/ · contract/   # contract/ pins each consumed contract (§13)
 ```
+
+**The App — composition root** (§1.1; the one place the full system is assembled + run + integration-tested):
+
+```
+[Name]-App/
+├── plugins.config.{ts,json}   # which plugins are enabled — the assembly manifest (toggle for §15 matrix)
+├── src/main.ts                # entrypoint: load Core → register()/boot() enabled plugins in dep order (§4)
+├── env/.env.example           # secrets gitignored; real values never committed (kit rule)
+├── docker-compose.yml         # run the FULL stack (Core + enabled plugins + datastores) here
+└── tests/
+    ├── integration/           # Core + several plugins on a real DB + bus
+    └── e2e/                   # full cross-plugin saga flows incl. failure/compensation paths
+```
+
+> The App holds **no** business logic and **no** infrastructure — only wiring, config, and the run/test
+> harness. It depends on `[Name]-Core` + the chosen `[Name]-Plugin/*`; it is never depended *on*.
 
 ## 17. Design principles (the why)
 
@@ -261,6 +296,7 @@ A plugin is "done" only when **all** are true:
 - [ ] Every registered key (route / permission / event / table / DI token) is `id`-prefixed.
 - [ ] No import crosses into another plugin; cross-feature access is via interface or event only.
 - [ ] Owns its migrations + seeds; touches no other plugin's tables.
+- [ ] Registered in the **App**'s `plugins.config`; the assembled App boots and its integration + E2E pass.
 - [ ] Unit + integration + **contract** tests pass; the removal-isolation matrix still boots.
 - [ ] Any cross-plugin write flow has a saga + compensating action.
 - [ ] Config is schema-validated & config-driven; secrets in gitignored env; nothing hardcoded.

@@ -11,7 +11,8 @@ complementary**:
   breaking the rest).
 
 They don't compete — the plugin design is **content that lives in `docs/architecture/`**, while the *app code*
-follows it across two repos: `[Name]-Core/` (the host) and `[Name]-Plugin/` (the features).
+follows it across three repos: `[Name]-Core/` (the host), `[Name]-Plugin/` (the features), and `[Name]-App/`
+(the composition root that wires Core + the chosen plugins and **runs / integration-tests the full system**).
 
 > 📄 The enforceable design contract is **[system-design.md](system-design.md)** — manifest, load order,
 > versioning, fault isolation, namespacing, shared-data ownership, security boundaries, contract testing,
@@ -31,6 +32,7 @@ follows it across two repos: `[Name]-Core/` (the host) and `[Name]-Plugin/` (the
 |---|---|
 | **Core** (Loader, Router, DI, Auth, Cache, Logging — infra only) | host repo `[Name]-Core/` |
 | **Each feature plugin** (self-contained, no plugin→plugin import) | `[Name]-Plugin/<id>/` — one folder per plugin |
+| **Composition root** — assemble Core + chosen plugins, **run + integration-test the full system** | `[Name]-App/` |
 | **The architecture rules & contracts** | `[Name]-Docs/docs/architecture/system-design.md` (this doc) |
 | **Operating rules (MUST / MUST NOT)** | `[Name]-Docs/docs/[name]-dev-rules.md` |
 | **One doc per plugin** | `[Name]-Docs/docs/features/<id>.md` |
@@ -80,6 +82,16 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 │   ├── chat/                        # app · same shape — self-contained
 │   └── inventory/                   # app · same shape — self-contained
 │
+├── Acme-App/                        # scaffold · COMPOSITION ROOT — assemble Core + plugins, RUN the full system
+│   ├── README.md                    # scaffold · GitHub overview
+│   ├── plugins.config.ts            # app · which plugins are enabled (toggle here for the §15 removal matrix)
+│   ├── src/main.ts                  # app · entrypoint: load Core → register()/boot() enabled plugins in dep order
+│   ├── env/.env.example             # app · secrets gitignored; real values never committed
+│   ├── docker-compose.yml           # app · run the FULL stack (Core + enabled plugins + datastores) HERE
+│   └── tests/
+│       ├── integration/             # app · Core + several plugins on a real DB + bus
+│       └── e2e/                     # app · full cross-plugin saga flows incl. failure/compensation
+│
 └── Acme-Docs/                       # scaffold · all knowledge, centralized, English, frontmatter on every file
     ├── README.md                    # scaffold · GitHub overview
     ├── scripts/docs-lint.py         # scaffold · frontmatter + link/anchor validator → CI
@@ -99,7 +111,7 @@ Acme-Project/                        # workspace root = its own thin git repo (t
         └── templates/               # scaffold · copy-to-create scaffolds (frontmatter, feature, plugin…)
 ```
 
-### Reading the three repos
+### Reading the four repos
 
 - **`Acme-Core/` = the host (infra only).** The Plugin Loader, Router, Event Bus, DI container, auth, cache,
   logging — and the shared cross-cutting entities (User, Tenant). It knows **no** feature. This is where the
@@ -107,6 +119,11 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 - **`Acme-Plugin/` = the features.** One self-contained folder per plugin, each a full vertical slice
   (manifest + backend + frontend + tests). Each is **removable** and talks to the rest only through Core
   interfaces or the Event Bus — never by importing another plugin.
+- **`Acme-App/` = the composition root (where the full system runs).** It depends on Core + the chosen
+  plugins, declares the enabled set in `plugins.config`, and boots everything — this is where you `docker
+  compose up` the whole stack and where **integration + E2E tests** run. It holds **no** business logic and
+  **no** infrastructure: only wiring, config, and the run/test harness. Flip a plugin off here and the §15
+  matrix proves the rest still boots.
 - **`Acme-Docs/` = the project's brain.** The router + entry points sit at the workspace root; all knowledge
   (architecture, per-plugin docs, registries, process) lives here with frontmatter for retrieval.
 
@@ -121,8 +138,10 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 ## Use it
 
 1. Run the [new-project scaffolder](../../kit/new-project-scaffold.md) — answer the intake, pick your stack;
-   tell it to use the `Core` / `Plugin` repo names instead of `Main` / `Standalone`.
+   tell it to use the `Core` / `Plugin` / `App` repo names instead of `Main` / `Standalone`.
 2. Drop [system-design.md](system-design.md) into `[Name]-Docs/docs/architecture/` and move the MUST/MUST NOT
    rules into `[name]-dev-rules.md`.
 3. Build `[Name]-Core/` (infra only) and your first `[Name]-Plugin/<id>/` to the contract; wire the §15 CI gates.
-4. Keep `versions.md` / `ports.md` in sync with each plugin's manifest (registry rule).
+4. Wire the plugin into `[Name]-App/`'s `plugins.config`, then `docker compose up` to run the full system and
+   run integration + E2E there.
+5. Keep `versions.md` / `ports.md` in sync with each plugin's manifest (registry rule).
