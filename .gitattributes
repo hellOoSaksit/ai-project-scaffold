@@ -1,0 +1,25 @@
+# Normalize every text file to LF — in the repo AND in the working tree on
+# every OS. This stops editors/Git on Windows (or autocrlf) from reintroducing
+# CRLF churn that shows whole files as "changed" when only line endings differ.
+* text=auto eol=lf
+
+# Be explicit for the file types this repo uses.
+*.md   text eol=lf
+*.html text eol=lf
+*.txt  text eol=lf
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.cjs  text eol=lf
+*.js   text eol=lf
+*.ts   text eol=lf
+
+# Binaries — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
