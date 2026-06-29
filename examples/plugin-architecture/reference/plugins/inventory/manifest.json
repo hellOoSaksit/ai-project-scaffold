@@ -1,0 +1,16 @@
+{
+  "id": "inventory",
+  "name": "Inventory",
+  "version": "1.2.0",
+  "coreVersion": "^2.0.0",
+  "provides": ["inventory.StockService"],
+  "consumes": ["core.User"],
+  "permissions": ["inventory.view", "inventory.adjust"],
+  "routes": ["/inventory/*"],
+  "events": {
+    "emits": ["inventory.reserved", "inventory.failed"],
+    "listens": ["order.placed"]
+  },
+  "config": { "schema": "./config.schema.json" },
+  "migrations": "./backend/database/migrations"
+}

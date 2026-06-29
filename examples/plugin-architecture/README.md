@@ -19,6 +19,11 @@ follows it across three repos: `[Name]-Core/` (the host), `[Name]-Plugin/` (the 
 > observability, and the CI gates that make every rule real. It is written in the kit's `docs/` frontmatter
 > format so you can drop it straight into a scaffolded project.
 
+> 🔧 The **[reference/](reference/)** folder makes it concrete: a runnable skeleton (Core contract +
+> `inventory`/`order` plugins + the App entrypoint) plus the two ready-to-copy CI gates —
+> [`manifest.schema.json`](reference/manifest.schema.json) and
+> [`.dependency-cruiser.cjs`](reference/.dependency-cruiser.cjs) (no plugin→plugin imports).
+
 > **Naming note.** This example uses **`Core` / `Plugin`** instead of the kit's generic `Main` / `Standalone`
 > labels, because the whole architecture is plugin-based and those words are the industry standard (host
 > `Core` + `Plugin`s, as in VSCode / WordPress / Strapi). The layout is identical to the scaffold's — only

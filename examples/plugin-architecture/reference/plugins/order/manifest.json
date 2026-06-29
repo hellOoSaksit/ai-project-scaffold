@@ -1,0 +1,16 @@
+{
+  "id": "order",
+  "name": "Order",
+  "version": "1.0.0",
+  "coreVersion": "^2.0.0",
+  "dependencies": ["inventory"],
+  "consumes": ["core.User", "inventory.StockService"],
+  "permissions": ["order.view", "order.place"],
+  "routes": ["/order/*"],
+  "events": {
+    "emits": ["order.placed", "order.confirmed", "order.cancelled"],
+    "listens": ["inventory.reserved", "inventory.failed"]
+  },
+  "config": { "schema": "./config.schema.json" },
+  "migrations": "./backend/database/migrations"
+}
