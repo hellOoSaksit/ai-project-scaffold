@@ -10,8 +10,13 @@ reference/
 ├── .dependency-cruiser.cjs     # §15 — CI gate: no plugin→plugin imports · core can't import plugins · no cycles
 ├── core/
 │   └── contracts/
-│       └── stock-service.ts    # §5/§6 — a published cross-plugin contract (interface in Core, impl in the owner plugin)
+│       ├── stock-service.ts        # §5/§6 — a published cross-plugin contract (interface in Core, impl in the owner plugin)
+│       └── postgres-connection.ts  # §3.1/§6 — same pattern, for a `kind: tool` plugin's connection contract
 ├── plugins/
+│   ├── postgres/                # id = the tool's id — NOT a `Tools-` prefixed folder (§3.1 naming note)
+│   │   ├── manifest.json           # kind: tool · PROVIDES postgres.Connection · secrets:[database_url] · compose fragment
+│   │   ├── compose.fragment.yml     # the sidecar container this tool ships — merged into the App's stack when enabled
+│   │   └── index.ts                 # register() only — no boot() wiring, a tool has nothing to react to
 │   ├── inventory/
 │   │   ├── manifest.json       # PROVIDES inventory.StockService · listens order.placed
 │   │   └── index.ts            # §10 lifecycle · §5.1 Pattern A (provide) + Pattern B (event) · §8 fault boundary
@@ -32,6 +37,18 @@ reference/
 - swap or remove Inventory → Order still compiles (it only knows the Core interface);
 - `dependency-cruiser` fails CI the moment anyone writes `import … from "plugins/inventory/…"`;
 - a consumer-driven contract test pins `StockService` so Inventory can't break Order silently (§13).
+
+## The `postgres` plugin — a `tool`, not a feature
+
+`plugins/postgres/` is the same manifest + lifecycle shape as `inventory`/`order`, but its `kind` is
+**`tool`**, not `capability` (§3.1): it ships a `compose.fragment.yml` (its own sidecar container) and
+`register()`s the `postgres.Connection` contract instead of a business service. Any capability plugin that
+needs a database would declare `dependencies: ["postgres"]` + `consumes: ["postgres.Connection"]` — same
+DI indirection as `StockService` above, so swapping Postgres for another provider means swapping this one
+plugin, not touching every feature that reads/writes data. Note its folder is **`postgres/`, not
+`Tools-Postgres/`** — the manifest `id` is always lowercase (schema-enforced); `Tools-` is a *repo-name*
+convention, used only once a plugin is promoted to its own repo (`[Name]-Plugin-Tools-Postgres`) in the
+"repo-per-plugin" phase.
 
 ## Use the two gates in your pipeline
 

@@ -87,7 +87,8 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 │   │   └── tests/ { unit/  integration/  contract/ }  # contract/ pins each consumed contract
 │   ├── chat/                        # app · same shape — self-contained
 │   ├── inventory/                   # app · same shape — self-contained (kind: capability)
-│   └── Tools-Postgres/             # app · kind: tool — a backing service (own container); ships compose.fragment.yml + a `postgres.Connection` contract (§3.1)
+│   └── postgres/                    # app · kind: tool — a backing service (own container); ships compose.fragment.yml + a `postgres.Connection` contract
+│                                     #   folder = the manifest `id`, lowercase, no `Tools-` prefix (§3.1 naming note)
 │
 ├── Acme-App/                        # scaffold · COMPOSITION ROOT — assemble Core + plugins, RUN the full system
 │   ├── README.md                    # scaffold · GitHub overview
@@ -127,9 +128,11 @@ Acme-Project/                        # workspace root = its own thin git repo (t
   vertical slice (manifest + backend + frontend + tests). Each is **removable** and talks to the rest only
   through Core interfaces or the Event Bus — never by importing another plugin. The manifest's **`kind`**
   splits two shapes (§3.1): **`capability`** plugins run in-process (the features above), while **`tool`**
-  plugins (`Tools-Postgres`, `Tools-Redis`, `Tools-MinIO`) are backing services that run in their own
-  container — Core ships no datastore, a tool brings the sidecar (`compose` fragment) + a connection contract
-  the features `consume`. A `tool`/`app` sits behind the network seam, so it may be written in any language.
+  plugins (`postgres`, `redis`, `minio` — folder = the lowercase manifest `id`, no prefix) are backing
+  services that run in their own container — Core ships no datastore, a tool brings the sidecar (`compose`
+  fragment) + a connection contract the features `consume`. A `tool`/`app` sits behind the network seam, so
+  it may be written in any language. (`Tools-` is a *repo-name* convention for the later repo-per-plugin
+  phase — `[Name]-Plugin-Tools-Postgres` — not the id.)
 - **`Acme-App/` = the composition root (where the full system runs).** It depends on Core + the chosen
   plugins, declares the enabled set in `plugins.config`, and boots everything — this is where you `docker
   compose up` the whole stack and where **integration + E2E tests** run. It holds **no** business logic and

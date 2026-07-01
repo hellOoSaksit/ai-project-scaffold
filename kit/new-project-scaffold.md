@@ -118,7 +118,10 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 ├── [Name]-Core/                 # the primary/host app everything plugs into (frontend + backend, or whatever the app is)
 │   └── README.md                # GitHub overview for humans — NO project knowledge, NOT an index
 ├── [Name]-Plugin/           # the plugin line — big features as their own apps (may be empty at first)
-│   └── <app>/                   # one folder per plugin app, when it exists
+│   └── <id>/                    # one folder per plugin, when it exists — folder = the manifest `id`
+│                                 #   (lowercase, no prefix). `kind: capability` = an in-process feature;
+│                                 #   `kind: tool` (e.g. a `postgres/`, `redis/` datastore) ships its own
+│                                 #   container via a compose fragment — see rule 5.
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
     └── docs/                    # ALL project knowledge, centralized, English — every file has frontmatter
@@ -205,8 +208,11 @@ cache, object store, bot gateway — or a full app that ships its **own containe
 exposes a namespaced connection contract). Keep Core **datastore-free**: a `tool` plugin brings the sidecar
 + the contract the rest `consumes`, so swapping a provider is a tool swap, not a feature rewrite. Anything
 behind the network seam (`tool`/`app`) MAY be polyglot; an in-process `capability` MUST match Core's
-language. Name tool plugins `[Name]-Plugin-Tools-<Infra>` (id = the name minus `Tools-`). For the full
-enforceable contract (manifest `kind`/`compose`/`secrets`, the three channels, CI gates) see the
+language. **Two different names, don't conflate them:** the manifest `id` (and its folder, `[Name]-Plugin/
+<id>/`, in single-repo mode) is always lowercase, no prefix (`postgres`, `redis`) — it doubles as the
+namespace prefix everywhere (rule on namespacing, §6 in the example). `[Name]-Plugin-Tools-<Infra>` is a
+*repo-name* convention, used only once a tool is promoted to its own repo in a repo-per-plugin phase. For
+the full enforceable contract (manifest `kind`/`compose`/`secrets`, the three channels, CI gates) see the
 [plugin-architecture example](../examples/plugin-architecture/system-design.md).
 
 **6. Architecture — layering + data model.** Keep **separation of concerns**: a thin HTTP/route layer →

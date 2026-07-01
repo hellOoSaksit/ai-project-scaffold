@@ -13,6 +13,7 @@ export interface PluginEntry {
 }
 
 export const plugins: PluginEntry[] = [
+  { id: 'postgres', from: '../plugins/postgres', enabled: true }, // kind: tool — ships its own container (§3.1)
   { id: 'inventory', from: '../plugins/inventory', enabled: true },
   { id: 'order', from: '../plugins/order', enabled: true },
   // add more plugins here; load ORDER is computed from each manifest's `dependencies`, not this list

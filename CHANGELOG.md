@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Tool-plugin naming was inconsistent with its own schema.** The plugin-kinds tree examples used a
+  `Tools-Postgres/`-style folder name, but the manifest `id` pattern is lowercase-only (`^[a-z][a-z0-9-]*$`)
+  and namespaces everything (§6) — so the folder must be `postgres/`, matching the `id`. Fixed the tree
+  diagrams in `kit/new-project-scaffold.md` (which previously had **no** tool-plugin example at all),
+  `examples/plugin-architecture/system-design.md` §1/§3.1, and the example README, and clarified that
+  `[Name]-Plugin-Tools-<Infra>` is a *repo-name* convention (used only once a tool is promoted to its own
+  repo) — never the manifest `id` or its folder.
+- **Added a real `postgres` tool-plugin example** to `examples/plugin-architecture/reference/` — the
+  runnable skeleton previously only demonstrated `capability` plugins (`inventory`, `order`). New:
+  `plugins/postgres/{manifest.json,compose.fragment.yml,index.ts}` (kind: tool, `secrets`, `compose`),
+  `core/contracts/postgres-connection.ts` (the published `postgres.Connection` contract, same pattern as
+  `stock-service.ts`), wired into `app/plugins.config.ts`, and documented in `reference/README.md`.
+- Updated the top-level README's Examples section to point at the real `postgres` reference example and
+  the same id-vs-repo-name clarification, instead of the stale `[Name]-Plugin-Tools-Postgres` naming.
+
 ### Added
 - **README Thai summary** — a concise `🇹🇭 สรุปภาษาไทย` section near the top (linked from **Contents**)
   covering the same principles as the English body (router/AGENTS.md/llms.txt, job-first docs, registries,

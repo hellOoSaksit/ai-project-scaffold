@@ -36,7 +36,8 @@ App  (composition root)          # the ONLY place that assembles + runs the whol
 │
 └── Plugins/                     # one self-contained slice per plugin — `kind` decides its shape (§3.1)
     ├── CRM/ · Chat/ · Inventory/ · Report/ · Dashboard/ · AI/ ...   # kind: capability — in-process features
-    └── Tools-Postgres/ · Tools-Redis/ · Tools-MinIO/ ...            # kind: tool — sidecar backing services (own container + compose fragment)
+    └── postgres/ · redis/ · minio/ ...   # kind: tool — sidecar backing services (own container + compose fragment)
+                                           #   folder = the manifest `id` (lowercase, no prefix) — see §3.1 naming note
 ```
 
 A plugin owns its **full vertical slice**: backend (api · controllers · services · models · migrations ·
@@ -125,9 +126,13 @@ that talks to Core in-process must share Core's language; a plugin behind the ne
   and asks over the published contract (§7), exactly like an in-process plugin. Isolation is identical; only
   the transport (network vs in-process call) differs.
 
-> **Naming convention.** Give tool plugins a clear, greppable name — `[Name]-Plugin-Tools-<Infra>`
-> (e.g. `-Tools-Postgres`, `-Tools-Redis`, `-Tools-MinIO`) — and derive the manifest `id` by stripping the
-> `Tools-` segment (`postgres`, `redis`, `minio`) so the id stays a valid namespace prefix (§6).
+> **Naming convention — two different names, don't conflate them.** The manifest **`id`** (and so the
+> plugin's folder in this single-repo reference layout, `plugins/<id>/`) is always **lowercase, no
+> prefix** — `postgres`, `redis`, `minio` — because it doubles as the namespace prefix everywhere (§6:
+> routes, permissions, DI tokens). The **`Tools-` prefix is a *repo-name* convention only**, used once a
+> tool is promoted to its own repo in the "repo-per-plugin" phase: `[Name]-Plugin-Tools-<Infra>` (e.g.
+> `[Name]-Plugin-Tools-Postgres`) sitting alongside `[Name]-Plugin-<Feature>` repos — a human-facing,
+> greppable repo name, distinct from the machine-facing `id` inside it.
 
 ## 4. Load order, dependency resolution & versioning
 

@@ -1,0 +1,17 @@
+# Sidecar container this `kind: tool` plugin ships (manifest `compose`, §3.1).
+# The App merges every ENABLED plugin's fragment into the generated stack (§1.1) — disable this plugin
+# in `plugins.config.ts` and this service (and the `postgres.Connection` contract) disappears with it.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in env, never hardcoded — §9-security}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # internal-by-default: no host port published unless a dev workflow needs one — if it does,
+    # allocate it from the registry (`[Name]-Docs/docs/architecture/ports.md`), never hardcode it here.
+
+volumes:
+  postgres-data:
