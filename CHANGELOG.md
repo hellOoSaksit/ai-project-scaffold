@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **README Thai summary was missing the agent-toolchain recommendation** — the English body has a full
+  "Recommended agent toolchain" table (scaffolder rule 10) but the `🇹🇭 สรุปภาษาไทย` section never
+  mentioned it, so a Thai-reading visitor could miss the whole install-these-plugins step. Added a
+  "ต้องติดตั้ง plugin/MCP อะไรให้ agent บ้าง" section listing all 10 (superpowers, code-review, github,
+  context7, claude-md-management, skill-creator, security-guidance, a language LSP, serena, hookify), and
+  added a matching "**A recommended agent toolchain**" bullet to the English **What you get** list so the
+  feature is visible there too, not only buried in Installation.
 - **Tool-plugin naming was inconsistent with its own schema.** The plugin-kinds tree examples used a
   `Tools-Postgres/`-style folder name, but the manifest `id` pattern is lowercase-only (`^[a-z][a-z0-9-]*$`)
   and namespaces everything (§6) — so the folder must be `postgres/`, matching the `id`. Fixed the tree

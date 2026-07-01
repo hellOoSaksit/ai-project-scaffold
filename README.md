@@ -48,6 +48,23 @@ AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-f
 - **Plugin** — ฟีเจอร์ใหม่แต่ละตัวแยกเป็น plugin ของตัวเอง ถอดออกได้โดยไม่กระทบส่วนอื่น พอฟีเจอร์นิ่งแล้วค่อยรวมเข้า Core ทีหลัง และแยกชัดระหว่าง plugin ที่เป็นฟีเจอร์ (รันในโปรเซสเดียวกับ Core) กับ plugin ที่เป็น **tool** (เช่น Postgres, Redis, MinIO — มีคอนเทนเนอร์ของตัวเอง แยกออกไปต่างหาก) ดูตัวอย่างเต็มที่ [Examples](#-examples)
 - **docs-lint** — สคริปต์ที่รันใน CI คอยเช็คว่าลิงก์ไม่พัง เอกสารไม่ขาดตก ถ้าพังคือ build แดงทันที ไม่ปล่อยให้เอกสารค่อยๆ เพี้ยนไปเรื่อยๆ
 
+**ต้องติดตั้ง plugin/MCP อะไรให้ agent บ้าง**
+
+มีแค่โครงสร้างไฟล์เฉยๆ ไม่พอ ต้องมี agent ที่ "ใช้" โครงสร้างนี้เป็นด้วย ชุดที่แนะนำ (ชื่อเป็น plugin/MCP ของ Claude Code — agent ตัวอื่นก็หาของเทียบเคียงได้):
+
+- **superpowers** — กระบวนการทำงานหลักของ agent (brainstorm / TDD / debug) แทนที่จะแก้โค้ดมั่วๆ
+- **code-review** — รีวิว diff/PR ก่อน merge
+- **github** — จัดการ PR/issue จาก agent ได้เลย
+- **context7** — ดึงเอกสาร library เวอร์ชันล่าสุดมาใช้ กัน AI เขียนโค้ดตาม API เก่าที่จำมาผิด
+- **claude-md-management** — ดูแล `CLAUDE.md` ให้บางและตรงกับโปรเจกต์เสมอ ไม่ปล่อยให้บวมจนกิน token
+- **skill-creator** — แปลง workflow ที่ agent ทำซ้ำบ่อยๆ ให้เป็น skill ของตัวเอง
+- **security-guidance** — เตือนเรื่อง security ระหว่างแก้โค้ด
+- **LSP ของภาษาที่ใช้** (เช่น `pyright-lsp` สำหรับ Python, `typescript-lsp` สำหรับ JS/TS) — ให้ go-to-definition/type-check แม่นกว่า grep เยอะ **โปรเจกต์ที่มีโค้ดจริงควรมี**
+- **serena** — semantic code search ใช้ได้กับทุกภาษา โปรเจกต์ยิ่งใหญ่ยิ่งจำเป็น
+- **hookify** — เอากฎเฉพาะของโปรเจกต์ (เช่น "รันใน sandbox เท่านั้น") มาทำเป็น guardrail hook บังคับอัตโนมัติ ไม่ต้องหวังให้ agent จำเอง
+
+ชุดนี้คือชุดเต็มสำหรับโปรเจกต์จริงจัง สคริปต์เล็กๆ ไม่ต้องติดครบทุกตัว รายละเอียด + เหตุผลของแต่ละตัวอยู่ที่ [Installation](#installation)
+
 **ทำไมถึงคุ้ม**
 
 มีคนวัดจริงด้วย `tiktoken` (ไม่ใช่เดาเอา) ว่าพอใช้โครงสร้างนี้ AI โหลด context น้อยลง **83–96%** ต่องาน เพราะเปิดแค่ไฟล์ที่เกี่ยวจริงๆ ไม่ต้องโหลดทั้งคลังความรู้ ดูตัวเลขจริงที่ [Token economics](#-token-economics--measured-not-guessed)
@@ -106,6 +123,7 @@ docs, multiple apps, or AI agents working in it.
 - **Plugin lifecycle** — build big features as separate apps, then fold back into core on gated promotion.
 - **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI; LF normalized repo-wide via `.gitattributes`.
 - **A worked example** — a full [plugin-architecture](examples/plugin-architecture/) build (Core + Plugin + App + Docs) with an enforceable `system-design.md`, a runnable reference skeleton, and two copy-paste CI gates (manifest schema + a no-plugin→plugin-imports check).
+- **A recommended agent toolchain** — a curated plugin/MCP set (process skills, code review, VCS, fresh library docs, router upkeep, a language LSP, semantic search, guardrail hooks) so the agent works *with* the structure above instead of around it — see [Installation](#installation).
 
 ## 🔒 Security & secret handling
 
