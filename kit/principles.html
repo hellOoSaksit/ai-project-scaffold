@@ -93,7 +93,7 @@ flowchart TD
   C["CLAUDE.md — router (always-on rules + task router)<br/>auto-loaded"]:::r
   A["AGENTS.md — signal-dense entry for 30+ agents<br/>(build/test/run cmds + boundaries, then &rarr; router)"]:::r
   L["llms.txt — LLM navigation map"]:::r
-  M["[Name]-Main/<br/>main app (frontend + backend)"]:::box
+  M["[Name]-Core/<br/>primary/host app (frontend + backend)"]:::box
   D["[Name]-Docs/docs/<br/>all knowledge (English, .md, frontmatter)"]:::box
   S["[Name]-Plugin/<br/>big features = separate apps"]:::box
   U --> C --> A --> L
@@ -129,28 +129,29 @@ flowchart TD
 
 <!-- 3 -->
 <section>
-  <h2>3. Plugin lifecycle <span class="en">— big feature → plugin-first → main</span></h2>
-  <p class="lead">Build big features as plugin apps first, then fold them into main (gated). A stateful one gets its own DB + Docker.</p>
+  <h2>3. Plugin lifecycle <span class="en">— big feature → plugin-first → core</span></h2>
+  <p class="lead">Build big features as plugin apps first, then fold them into core (gated). A stateful one gets its own DB + Docker.</p>
   <div class="mermaid">
 flowchart TD
   F["big feature<br/>(can ship as its own deliverable)"]:::start --> B["build as [Name]-Plugin"]:::box
   B --> N["drop login (open endpoints)"]:::box
   B --> ST{stateful?}:::dec
   ST -- "stateless" --> S2["2 services<br/>(frontend + backend)"]:::box
-  ST -- "stateful" --> S3["+ own DB/redis/minio<br/>(internal, not published to host by default)<br/>schema = same Alembic flow as main"]:::box
+  ST -- "stateful" --> S3["+ own DB/redis/minio<br/>(internal, not published to host by default)<br/>schema = same Alembic flow as core"]:::box
   N --> RI["re-integration-ready<br/>(write integration.md as you go)"]:::box
   S2 --> RI
   S3 --> RI
   RI --> V["version vMAJOR.MINOR<br/>(config.py → /api/health)"]:::box
   V --> G{promote?<br/>needs explicit approval}:::dec
   G -- "not yet approved" --> UAT["UAT keeps moving<br/>(Unreleased changelog)"]:::warnb
-  G -- "approve" --> MAIN["fold into main:<br/>re-gate auth · shell/nav/RBAC/i18n ·<br/>settings→tools+DB · fold schema · dedupe"]:::okb
+  G -- "approve" --> MAIN["fold into core:<br/>re-gate auth · shell/nav/RBAC/i18n ·<br/>settings→tools+DB · fold schema · dedupe"]:::okb
   classDef start fill:#26294a,stroke:#6366f1,color:#fff,font-weight:bold;
   classDef box fill:#181a2e,stroke:#2c2f4a,color:#e8e9f3;
   classDef dec fill:#1f2238,stroke:#f59e0b,color:#ffe9c2;
   classDef warnb fill:#2a2412,stroke:#f59e0b,color:#ffe9c2;
   classDef okb fill:#102a1f,stroke:#10b981,color:#bff3da;
   </div>
+  <p class="note"><b>Plugin kinds (manifest <code>kind</code>) — features vs tools.</b> <code>capability</code> = in-process feature (same language as Core, DI + Event Bus). <code>tool</code>/<code>app</code> = a backing service (Postgres · Redis · MinIO · a bot gateway) or app in its <b>own container</b> — ships a <code>compose</code> fragment + a connection contract; may be polyglot. Core ships <b>no datastore</b>: a <code>tool</code> plugin (<code>[Name]-Plugin-Tools-&lt;Infra&gt;</code>) brings it. See the <a href="../examples/plugin-architecture/system-design.md">plugin-architecture example §3.1</a>.</p>
 </section>
 
 <!-- 4 -->
@@ -162,10 +163,10 @@ flowchart TD
       <div class="mermaid">
 flowchart LR
   subgraph FEAT["features → direction UAT→Prod"]
-    SA["Plugin (UAT)<br/>bumps freely 0.1→0.2"]:::w -- "promote (approve)" --> MA["main (Production)<br/>held until promote"]:::o
+    SA["Plugin (UAT)<br/>bumps freely 0.1→0.2"]:::w -- "promote (approve)" --> MA["core (Production)<br/>held until promote"]:::o
   end
-  subgraph LIB["libs/engine → direction main→Plugin"]
-    MB["main (upstream)"]:::o -- "non-breaking update<br/>+ propagate" --> SB["Plugin"]:::w
+  subgraph LIB["libs/engine → direction core→Plugin"]
+    MB["core (upstream)"]:::o -- "non-breaking update<br/>+ propagate" --> SB["Plugin"]:::w
   end
   classDef w fill:#2a2412,stroke:#f59e0b,color:#ffe9c2;
   classDef o fill:#102a1f,stroke:#10b981,color:#bff3da;
@@ -175,7 +176,7 @@ flowchart LR
       <b>Versioning rules (§6.5)</b>
       <ul>
         <li>Every copy has an <code>app_version</code> (config.py → /api/health) — not hardcoded</li>
-        <li>UAT bumps freely · <b>main stays at the last promoted version</b></li>
+        <li>UAT bumps freely · <b>core stays at the last promoted version</b></li>
         <li>While they differ → the doc carries <code>## Unreleased — pending promotion</code></li>
         <li><b class="ok">Promote only when told</b> → versions converge again</li>
         <li>Registry = <code>versions.md</code> (UAT / Production / pending)</li>
@@ -235,16 +236,16 @@ flowchart TD
 <!-- 7 -->
 <section>
   <h2>7. Allocating ports / versions for a new project <span class="en">— allocation pattern (example)</span></h2>
-  <p class="lead">registry-driven (<code>ports.md</code> + <code>versions.md</code>): Main = the base pair, each plugin = the next offset pair — every app can run at once without port clashes. <b>The numbers below are an example</b> — a real project allocates from the registry.</p>
+  <p class="lead">registry-driven (<code>ports.md</code> + <code>versions.md</code>): Core = the base pair, each plugin = the next offset pair — every app can run at once without port clashes. <b>The numbers below are an example</b> — a real project allocates from the registry.</p>
   <table>
     <tr><th>App</th><th>Frontend</th><th>Backend</th><th>State</th><th>Version</th></tr>
-    <tr><td><code>[Name]-Main</code></td><td>5173</td><td>8000</td><td>db/redis/minio (if any)</td><td>v0.1.0</td></tr>
+    <tr><td><code>[Name]-Core</code></td><td>5173</td><td>8000</td><td>db/redis/minio (if any)</td><td>v0.1.0</td></tr>
     <tr><td><code>[Name]-Plugin</code> / app-A</td><td>5174</td><td>8001</td><td>stateless</td><td>v0.1.0</td></tr>
     <tr><td><code>[Name]-Plugin</code> / app-B (stateful)</td><td>5175</td><td>8002</td><td>own DB (internal, not published to host by default)</td><td>v0.1.0</td></tr>
     <tr><td><i>next plugin</i></td><td>5176</td><td>8003</td><td>…</td><td>—</td></tr>
   </table>
   <p class="note">Rule: allocate the port pair from <code>ports.md</code> + the version from <code>versions.md</code> (same commit) · a stateful plugin's datastore is internal-by-default. <br>
-  Example offsets: main 5173/8000 · app-A 5174/8001 · app-B 5175/8002 — leave +1 per pair so every app can run at once.</p>
+  Example offsets: core 5173/8000 · app-A 5174/8001 · app-B 5175/8002 — leave +1 per pair so every app can run at once.</p>
 </section>
 
 <!-- 8 -->
@@ -287,6 +288,29 @@ flowchart TD
       <p class="note">Proven: a real docs-lint run goes clean → broken link → exit 1 → green again (docs/evidence/measurements.md).</p>
     </div>
   </div>
+</section>
+
+<!-- 10 -->
+<section>
+  <h2>10. Agent toolchain <span class="en">— the plugins/MCP that run the structure</span></h2>
+  <p class="lead">The structure is inert without an agent that can navigate it. Install a small, high-leverage set so the agent works <i>with</i> the conventions, not around them. Names are the Claude Code plugin/MCP ecosystem — swap the equivalent on another agent.</p>
+  <div class="grid g2">
+    <div class="card"><b>Process &amp; ship</b>
+      <p><code>superpowers</code> — brainstorm / TDD / debug as the default operating loop.</p>
+      <p><code>code-review</code> — review the diff/PR before merge (pairs with the CI gates).</p>
+      <p><code>github</code> — drive PRs/issues; branch → review → merge in one place.</p>
+      <p><code>context7</code> — pull a library's <i>current</i> docs on demand → kills API drift.</p>
+      <p><code>security-guidance</code> — flag risky patterns while editing (reinforces the secret rules).</p>
+    </div>
+    <div class="card"><b>Navigate &amp; enforce</b>
+      <p><b>Language LSP</b> (<code>pyright-lsp</code> · <code>typescript-lsp</code> · your server) — trustworthy go-to-definition + type-check, far sharper than grep. <b>Every real-code repo should have one.</b></p>
+      <p><code>serena</code> — language-agnostic semantic code search; scales past grep + one context window.</p>
+      <p><code>claude-md-management</code> — keep the router thin as it grows.</p>
+      <p><code>skill-creator</code> — turn a recurring workflow into a <code>SKILL.md</code>.</p>
+      <p><code>hookify</code> — compile a project's own rules into auto-enforced guardrail hooks.</p>
+    </div>
+  </div>
+  <p class="note">Right-size it: this is the <i>full</i> set for a real, growing codebase — a throwaway script needs almost none of it. Add a plugin when its job actually recurs. Personal-workflow optimizations (a token-saver tied to a specific language/style) are installed <b>per developer</b>, not mandated by the project.</p>
 </section>
 
 </div>

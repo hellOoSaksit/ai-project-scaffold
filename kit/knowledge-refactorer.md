@@ -144,8 +144,10 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 > [scaffolder](new-project-scaffold.md), which is the **canonical source** for both. When a convention
 > changes, edit it in the scaffolder first, then reflect it here in the same change — so the two prompts
 > never drift. **Scope:** the refactorer brings the **docs** into this shape; the enforcement layer it
-> shows (`scripts/docs-lint.py` + CI) and `process/ai-runbooks.md` are *installed by the scaffolder* — if
-> they are missing in an existing project, flag them in the before→after map rather than inventing them.
+> shows (`scripts/docs-lint.py` + CI), `process/ai-runbooks.md`, and the recommended **agent toolchain**
+> (the scaffolder's rule 10 — process skills · review · VCS · fresh-docs · LSP · semantic search · guardrail
+> hooks) are *installed by the scaffolder* — if they are missing in an existing project, flag them in the
+> before→after map rather than inventing them.
 ```
 [Name]-Project/                  # umbrella = thin git repo (tracks shared root; gitignores child repos)
 ├── CLAUDE.md                    # the ONE shared router: always-on rules + project map + task router
@@ -153,7 +155,7 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 │                                #   signal-dense build/test/run commands + boundaries inline, THEN → router.
 │                                #   A curated extract of the docs (kept in sync), not a second source.
 ├── llms.txt                     # LLM navigation map (llmstxt.org): H1 + blockquote summary + H2 link-lists
-├── [Name]-Main/                 # the main application
+├── [Name]-Core/                 # the primary/host application
 │   └── README.md                # GitHub overview (humans) — NO project knowledge, NOT an index, NO CLAUDE stub
 ├── [Name]-Plugin/           # plugin apps (may be empty at first)
 │   └── <app>/                   # one folder per plugin app, when it exists

@@ -6,6 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **README Thai summary** — a concise `🇹🇭 สรุปภาษาไทย` section near the top (linked from **Contents**)
+  covering the same principles as the English body (router/AGENTS.md/llms.txt, job-first docs, registries,
+  plugin lifecycle + the capability/tool split, docs-lint, the measured token-economics headline) for a
+  Thai-reading visitor to grasp the kit fast on GitHub. Detailed prose (tables, citations, install steps)
+  stays English-only per the kit's own doc-language rule — this is a presentation hook, not a duplicated
+  knowledge source.
+- **Plugin kinds — separate features from tools** (folded back from a real project using the kit). The
+  plugin manifest gains a **`kind`** field — `capability` (in-process feature, default) · `tool` (a backing
+  service that ships its own container via a `compose` fragment + a connection contract) · `app` (an
+  out-of-process app that owns its container + DB) — plus `compose` and `secrets` manifest fields. Documents
+  the **zero-datastore Core** model (Core ships no datastore; a `tool` plugin brings it), the **polyglot
+  process-boundary rule** (cross-language allowed iff behind the network seam), and the
+  `[Name]-Plugin-Tools-<Infra>` naming convention. Added to `examples/plugin-architecture/system-design.md`
+  (new **§3.1**), `reference/manifest.schema.json` (`kind`/`compose`/`secrets`), the example README, the
+  scaffolder's **rule 5**, `kit/principles.html`, and the README Examples section.
+- **Recommended agent toolchain** — a new **rule 10** in `kit/new-project-scaffold.md` naming the
+  high-leverage plugin/MCP set that runs the structure (`superpowers`, `code-review`, `github`, `context7`,
+  `claude-md-management`, `skill-creator`, `security-guidance`, a language **LSP** (`pyright-lsp` /
+  `typescript-lsp`), `serena`, `hookify`) with a "right-size it / personal tools are per-developer" note.
+  Mirrored into `kit/knowledge-refactorer.md` (flag-if-missing scope note), `kit/principles.html` (new
+  section 10), and the README **Installation** section.
+
+### Changed
+- **Renamed the generic host repo `[Name]-Main` → `[Name]-Core`** across the kit for one vocabulary
+  (`[Name]-{Core,Docs,Plugin}`), and reframed it as *the primary/host app everything plugs into + the
+  promotion target*. Lifecycle prose followed (`fold into core`, `dependency direction core→plugin`,
+  `promote into core`, `Core = base pair`) in `kit/new-project-scaffold.md`, `kit/knowledge-refactorer.md`,
+  `kit/principles.html`, and the README. The `examples/plugin-architecture/` naming note now *keeps* `Core`
+  (matching the kit) and tightens it to an infra-only host rather than renaming `Main`→`Core`. The git
+  branch `main` and `src/main.ts` entrypoints are unchanged; earlier released changelog entries keep their
+  original wording.
+
 ## [0.3.0] - 2026-06-29
 
 ### Added

@@ -34,8 +34,9 @@ App  (composition root)          # the ONLY place that assembles + runs the whol
 │   ├── Shared Interfaces · Shared UI · Layout · Theme · i18n · Notification
 │   └── Shared Domain Services   # cross-cutting entities used by many plugins (e.g. User) — §7
 │
-└── Plugins/                     # one self-contained vertical slice per feature
-    ├── CRM/ · Chat/ · Inventory/ · Report/ · Dashboard/ · AI/ ...
+└── Plugins/                     # one self-contained slice per plugin — `kind` decides its shape (§3.1)
+    ├── CRM/ · Chat/ · Inventory/ · Report/ · Dashboard/ · AI/ ...   # kind: capability — in-process features
+    └── Tools-Postgres/ · Tools-Redis/ · Tools-MinIO/ ...            # kind: tool — sidecar backing services (own container + compose fragment)
 ```
 
 A plugin owns its **full vertical slice**: backend (api · controllers · services · models · migrations ·
@@ -78,6 +79,7 @@ makes discovery, ordering, versioning, namespacing, and security enforceable ins
   "name": "CRM",
   "version": "1.4.0",                // plugin's own semver
   "coreVersion": "^2.0.0",           // Core API range it is compatible with (§4)
+  "kind": "capability",              // capability (in-process, default) · tool (ships a compose fragment) · app (§3.1)
   "dependencies": ["contacts"],      // plugin ids that MUST boot first (§4)
   "optionalDependencies": ["ai"],    // used if present, degraded-but-functional if absent
   "provides": ["crm.LeadService"],   // shared contracts this plugin registers into the container
@@ -93,6 +95,39 @@ makes discovery, ordering, versioning, namespacing, and security enforceable ins
 The Loader **refuses boot** when: `coreVersion` is incompatible · a hard `dependencies` entry is missing ·
 a declared `permission`/`route`/`event` collides with another plugin · a key is not prefixed with `id` · a
 `consumes` entry was never `provide`d by anyone.
+
+### 3.1 Plugin kinds — capability vs tool vs app (the in-process / out-of-process seam)
+
+Not every plugin is the same shape. The manifest's **`kind`** declares which, and it decides *where the
+plugin runs* and *what language it may be written in*. The dividing line is the **network seam**: a plugin
+that talks to Core in-process must share Core's language; a plugin behind the network may be anything.
+
+| `kind` | Runs | Talks to Core via | Ships | Language |
+|---|---|---|---|---|
+| **`capability`** *(default)* | in-process (inside Core / the worker) | DI contracts + Event Bus (§5) | code only — owns its tables in the shared DB | **same as Core** (in-process DI needs one runtime) |
+| **`tool`** | its **own container** (a sidecar) | a namespaced **connection contract** over the network | a **`compose` fragment** + a thin contract (e.g. `postgres.Connection`, `minio.Storage`) | any — it's behind the seam |
+| **`app`** | its **own container + own database** | HTTP contracts + events across the network (§5) | a `compose` fragment + its full vertical slice | any — it's behind the seam |
+
+- **Tools are backing services, separated from features.** A **`tool`** plugin wraps infrastructure — a
+  datastore (Postgres, Redis), an object store (MinIO), a messaging/bot gateway (Telegram) — as an
+  installable unit. This is the **zero-datastore Core** model: **Core ships no datastore of its own**; a
+  tool plugin brings the sidecar container (its `compose` fragment) *and* the thin connection contract the
+  rest of the system `consumes` via DI. Enable the tool ⇒ its service joins the generated compose and its
+  contract appears in the container; disable it ⇒ both disappear. Capability plugins depend on a tool by
+  its **contract token** (`consumes: ["postgres.Connection"]`), never on the container directly — so
+  swapping Postgres for another provider is a tool swap, not a feature rewrite.
+- **The one polyglot rule.** Cross-language is allowed **iff** the plugin sits behind the network seam
+  (`kind: tool`/`app`). A `capability` shares Core's process, so it MUST be Core's language; a `tool`/`app`
+  owns its container and reaches Core only over HTTP + events, so it MAY be Node, Go, Rust, anything. This
+  *qualifies*, not contradicts, "one language inside the process" — the process boundary is the sanctioned
+  place to go polyglot, so a team can build a non-core service in its own stack without a Core rewrite.
+- **An out-of-process plugin never touches another plugin's or Core's DB directly** — it owns its own data
+  and asks over the published contract (§7), exactly like an in-process plugin. Isolation is identical; only
+  the transport (network vs in-process call) differs.
+
+> **Naming convention.** Give tool plugins a clear, greppable name — `[Name]-Plugin-Tools-<Infra>`
+> (e.g. `-Tools-Postgres`, `-Tools-Redis`, `-Tools-MinIO`) — and derive the manifest `id` by stripping the
+> `Tools-` segment (`postgres`, `redis`, `minio`) so the id stays a valid namespace prefix (§6).
 
 ## 4. Load order, dependency resolution & versioning
 

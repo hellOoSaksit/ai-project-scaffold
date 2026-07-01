@@ -23,6 +23,12 @@
       "description": "Semver RANGE of the Core this plugin is compatible with (§4); the Loader refuses to load a plugin whose range excludes the running Core.",
       "minLength": 1
     },
+    "kind": {
+      "type": "string",
+      "description": "Plugin kind (§3.1). `capability` = in-process module, same language as Core, talks via DI + Event Bus (the default). `tool` = an out-of-process backing service/datastore (Postgres, Redis, object store, a bot gateway) that ships its own container via `compose` and exposes only a namespaced connection contract. `app` = an out-of-process feature that owns its container AND its database and reaches Core only over HTTP + events — may be written in any language. A `tool`/`app` sits behind the network seam, so it MAY be polyglot; a `capability` MUST NOT.",
+      "enum": ["capability", "tool", "app"],
+      "default": "capability"
+    },
     "dependencies": {
       "type": "array",
       "description": "Plugin ids that MUST boot first (§4). The Loader topologically sorts on these; a cycle is a hard boot failure.",
@@ -95,6 +101,17 @@
     "migrations": {
       "type": "string",
       "description": "Path to this plugin's migrations; run in dependency order (§4)."
+    },
+    "compose": {
+      "type": "string",
+      "description": "Path to a Docker Compose fragment this plugin contributes — required for `kind: tool`/`app`, which ship their own sidecar container(s). The App merges every enabled plugin's fragment into the generated stack; disable the plugin and its service disappears (§3.1)."
+    },
+    "secrets": {
+      "type": "array",
+      "description": "Names of the secret/config keys this plugin needs (e.g. `database_url`) — resolved from the environment/secret store at boot, never hardcoded. Lets the App validate that every required secret is present before it starts a `tool`/`app` sidecar.",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+      "uniqueItems": true,
+      "default": []
     }
   }
 }

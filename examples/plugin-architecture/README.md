@@ -24,11 +24,11 @@ follows it across three repos: `[Name]-Core/` (the host), `[Name]-Plugin/` (the 
 > [`manifest.schema.json`](reference/manifest.schema.json) and
 > [`.dependency-cruiser.cjs`](reference/.dependency-cruiser.cjs) (no plugin→plugin imports).
 
-> **Naming note.** The kit's generic repos are `[Name]-Main` / `[Name]-Docs` / `[Name]-Plugin`. This example
-> specializes two things: it renames the host `Main` → **`Core`** (it provides infrastructure only, the
+> **Naming note.** The kit's generic repos are `[Name]-Core` / `[Name]-Docs` / `[Name]-Plugin`. This example
+> keeps the `Core` and `Plugin` names as-is and specializes two things: it **tightens `Core` to an
+> infrastructure-only host** (no features — Plugin Loader · Router · Event Bus · DI · Auth; the
 > industry-standard term — VSCode / WordPress / Strapi), and adds an explicit **`App`** repo (the composition
-> root that assembles + runs the system, §1.1). The **`Plugin`** line matches the kit as-is. The layout is
-> otherwise identical to the scaffold's.
+> root that assembles + runs the system, §1.1). The layout is otherwise identical to the scaffold's.
 
 ---
 
@@ -86,7 +86,8 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 │   │   │   └── pages/ components/ routes/ state/ assets/ i18n/
 │   │   └── tests/ { unit/  integration/  contract/ }  # contract/ pins each consumed contract
 │   ├── chat/                        # app · same shape — self-contained
-│   └── inventory/                   # app · same shape — self-contained
+│   ├── inventory/                   # app · same shape — self-contained (kind: capability)
+│   └── Tools-Postgres/             # app · kind: tool — a backing service (own container); ships compose.fragment.yml + a `postgres.Connection` contract (§3.1)
 │
 ├── Acme-App/                        # scaffold · COMPOSITION ROOT — assemble Core + plugins, RUN the full system
 │   ├── README.md                    # scaffold · GitHub overview
@@ -122,9 +123,13 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 - **`Acme-Core/` = the host (infra only).** The Plugin Loader, Router, Event Bus, DI container, auth, cache,
   logging — and the shared cross-cutting entities (User, Tenant). It knows **no** feature. This is where the
   Loader discovers plugins, resolves their `dependencies`, and boots them in order.
-- **`Acme-Plugin/` = the features.** One self-contained folder per plugin, each a full vertical slice
-  (manifest + backend + frontend + tests). Each is **removable** and talks to the rest only through Core
-  interfaces or the Event Bus — never by importing another plugin.
+- **`Acme-Plugin/` = the features *and* the tools.** One self-contained folder per plugin, each a full
+  vertical slice (manifest + backend + frontend + tests). Each is **removable** and talks to the rest only
+  through Core interfaces or the Event Bus — never by importing another plugin. The manifest's **`kind`**
+  splits two shapes (§3.1): **`capability`** plugins run in-process (the features above), while **`tool`**
+  plugins (`Tools-Postgres`, `Tools-Redis`, `Tools-MinIO`) are backing services that run in their own
+  container — Core ships no datastore, a tool brings the sidecar (`compose` fragment) + a connection contract
+  the features `consume`. A `tool`/`app` sits behind the network seam, so it may be written in any language.
 - **`Acme-App/` = the composition root (where the full system runs).** It depends on Core + the chosen
   plugins, declares the enabled set in `plugins.config`, and boots everything — this is where you `docker
   compose up` the whole stack and where **integration + E2E tests** run. It holds **no** business logic and
@@ -144,7 +149,7 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 ## Use it
 
 1. Run the [new-project scaffolder](../../kit/new-project-scaffold.md) — answer the intake, pick your stack;
-   keep the kit's `Plugin` line, rename the host `Main` → `Core`, and add an `App` repo for the run/assembly root.
+   keep the kit's `Core` + `Plugin` lines, tighten `Core` to infra-only, and add an `App` repo for the run/assembly root.
 2. Drop [system-design.md](system-design.md) into `[Name]-Docs/docs/architecture/` and move the MUST/MUST NOT
    rules into `[name]-dev-rules.md`.
 3. Build `[Name]-Core/` (infra only) and your first `[Name]-Plugin/<id>/` to the contract; wire the §15 CI gates.

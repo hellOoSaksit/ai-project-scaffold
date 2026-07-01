@@ -2,11 +2,11 @@
 title: New-project scaffolder (spin up a project from zero)
 type: prompt
 status: active
-keywords: [scaffold, new project, bootstrap, template, umbrella, main, docs, plugin, conventions, portable]
+keywords: [scaffold, new project, bootstrap, template, umbrella, core, docs, plugin, conventions, portable]
 related: [./knowledge-refactorer.md, ../README.md, ./principles.html]
 summary: >
   System prompt to bootstrap a brand-new project from zero with a proven, AI-friendly structure:
-  one umbrella `[Name]-Project/` holding `[Name]-Main`, `[Name]-Docs`, `[Name]-Plugin`, plus the
+  one umbrella `[Name]-Project/` holding `[Name]-Core`, `[Name]-Docs`, `[Name]-Plugin`, plus the
   full conventions system (router, frontmatter, registries, plugin lifecycle, runbooks, docs-lint).
   Self-contained — everything the scaffolder needs is described inline.
 updated: 2026-06-20
@@ -64,9 +64,9 @@ you **state your default + reason and proceed** unless the user objects (don't b
 ### Tier 1 — the spine (always establish)
 | Ask | Recommend with a reason (adapt to the logic) | Lands in |
 |---|---|---|
-| **Project type / shape** — web app · API-only · CLI · library · mobile · desktop · data pipeline | drives whether `[Name]-Main` is frontend+backend or something else | `tech-stack.md` · structure |
-| **Frontend** (is there a UI?) | "Vite + React SPA — fast dev, huge ecosystem; Next.js if SEO/SSR matters" | `tech-stack.md` · `[Name]-Main/` |
-| **Backend / API** | "FastAPI if Python + async I/O; Nest/Express if JS-first" | `tech-stack.md` · `[Name]-Main/` |
+| **Project type / shape** — web app · API-only · CLI · library · mobile · desktop · data pipeline | drives whether `[Name]-Core` is frontend+backend or something else | `tech-stack.md` · structure |
+| **Frontend** (is there a UI?) | "Vite + React SPA — fast dev, huge ecosystem; Next.js if SEO/SSR matters" | `tech-stack.md` · `[Name]-Core/` |
+| **Backend / API** | "FastAPI if Python + async I/O; Nest/Express if JS-first" | `tech-stack.md` · `[Name]-Core/` |
 | **Datastore — stateful?** | "Postgres for relational; none if stateless" | `tech-stack.md` · `database-design.md` |
 | **Users & access** — who uses it · roles/RBAC · multi-tenant? | "single role to start; add RBAC when a 2nd role appears" | `data-model.md` · dev-rules (auth) |
 | **Auth** (needed now?) | "defer until real users; cookie + JWT when needed" | `tech-stack.md` · dev-rules (auth) |
@@ -115,7 +115,7 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 │                                #   of the docs (kept in sync), not a second source. No frontmatter (spec).
 ├── llms.txt                     # LLM navigation map (llmstxt.org): H1 (project) + blockquote summary + H2
 │                                #   "file lists" of `[name](path): note` links — order per spec, no other headings
-├── [Name]-Main/                 # the main application (frontend + backend, or whatever the app is)
+├── [Name]-Core/                 # the primary/host app everything plugs into (frontend + backend, or whatever the app is)
 │   └── README.md                # GitHub overview for humans — NO project knowledge, NOT an index
 ├── [Name]-Plugin/           # the plugin line — big features as their own apps (may be empty at first)
 │   └── <app>/                   # one folder per plugin app, when it exists
@@ -135,7 +135,7 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
         scripts/docs-lint.py     # (sibling of docs/) link/anchor/frontmatter validator → run in CI
 ```
 
-> Use the uniform `[Name]-{Main,Docs,Plugin}` naming for the three child repos under the umbrella.
+> Use the uniform `[Name]-{Core,Docs,Plugin}` naming for the three child repos under the umbrella.
 > Everything else follows the layout above 1:1.
 
 > **Why job-first, not Diataxis.** Diátaxis (tutorial · how-to · reference · explanation) organizes docs
@@ -196,9 +196,18 @@ run at once) and `architecture/versions.md` (each app's version + UAT↔Producti
 
 **5. Plugin lifecycle** — build big features plugin-first → drop login → own DB+Docker if
 stateful → re-integration-ready → versioned (`vMAJOR.MINOR` in `config` → `/health`) → **gated promotion**
-(UAT may run ahead; promote into main only on explicit approval) → **dependency direction main→plugin**
-(main is upstream for shared libs/engine; non-breaking main updates propagate down). Document this in
-`[name]-dev-rules.md` (§ plugin) + a `plugin/README.md` contract.
+(UAT may run ahead; promote into core only on explicit approval) → **dependency direction core→plugin**
+(core is upstream for shared libs/engine; non-breaking core updates propagate down). Document this in
+`[name]-dev-rules.md` (§ plugin) + a `plugin/README.md` contract. **Plugin kinds — separate features from
+tools.** A plugin declares a `kind`: **`capability`** (default — an in-process feature, same language as
+Core, talks via DI + Event Bus) vs **`tool`**/**`app`** (an out-of-process **backing service** — datastore,
+cache, object store, bot gateway — or a full app that ships its **own container via a compose fragment** and
+exposes a namespaced connection contract). Keep Core **datastore-free**: a `tool` plugin brings the sidecar
++ the contract the rest `consumes`, so swapping a provider is a tool swap, not a feature rewrite. Anything
+behind the network seam (`tool`/`app`) MAY be polyglot; an in-process `capability` MUST match Core's
+language. Name tool plugins `[Name]-Plugin-Tools-<Infra>` (id = the name minus `Tools-`). For the full
+enforceable contract (manifest `kind`/`compose`/`secrets`, the three channels, CI gates) see the
+[plugin-architecture example](../examples/plugin-architecture/system-design.md).
 
 **6. Architecture — layering + data model.** Keep **separation of concerns**: a thin HTTP/route layer →
 a service/business-logic layer → a data/repository layer where **all** data access lives (one place, no
@@ -221,6 +230,36 @@ config-driven, not hardcoded" guard for the app/plugin repos).
 `.claude/skills/<name>/SKILL.md` (frontmatter `name` + `description`=trigger; body **thin**, pointing to
 the owning runbook/script — don't duplicate). Rule: see `ai-runbooks.md` R8.
 
+**10. Agent toolchain** — the structure is inert without an agent that can navigate it; install a small,
+high-leverage plugin/MCP set so the agent works *with* the conventions above rather than around them. Names
+below are the Claude Code plugin/MCP ecosystem; swap the equivalent on another agent.
+1. **Process skills** (`superpowers`) — brainstorm / TDD / debug as the default operating loop, so
+   multi-step work follows a disciplined process instead of ad-hoc edits.
+2. **Review before merge** (`code-review`) — review the diff/PR for bugs + simplifications before it lands;
+   pairs with the CI gates (rule 8).
+3. **VCS integration** (`github`) — drive PRs/issues from the agent, keeping branch → review → merge in one place.
+4. **Fresh library docs** (`context7`) — pull a library's *current* docs on demand so generated code tracks
+   the installed version, not a stale training snapshot (kills API drift).
+5. **Router upkeep** (`claude-md-management`) — keep `CLAUDE.md` (rule 1) thin and current as the project
+   grows, instead of letting it bloat into a second source of truth.
+6. **Author your own skills** (`skill-creator`) — turn a recurring workflow into a `SKILL.md` (rule 9)
+   without hand-writing the scaffolding.
+7. **Security awareness** (`security-guidance`) — flag risky patterns while editing, reinforcing the
+   key/secret rules (rule 2) at authoring time.
+8. **Language LSP** (`pyright-lsp` for Python · `typescript-lsp` for JS/TS · the server for your language)
+   — real go-to-definition + type-check the agent can trust, far more accurate than grep. **Every repo with
+   real code should have one** — same principle everywhere, just swap the server per language.
+9. **Semantic code search** (`serena`) — language-agnostic symbol/semantic search that scales as the
+   codebase grows past what grep + one context window can hold.
+10. **Guardrail hooks** (`hookify`) — compile a project's own rules into auto-enforced hooks (e.g. "run
+    builds only in the sandbox", a house-style/wording check), so the conventions bite automatically instead
+    of relying on memory.
+
+> **Right-size it.** This is the *full* set for a real, growing codebase; a throwaway script needs almost
+> none of it. Add a plugin when its job actually recurs — the same *reuse / right-size before you build*
+> discipline the docs preach. Tools that are personal-workflow optimizations (e.g. a token-saver tied to a
+> specific language or writing style) are installed **per developer**, not mandated by the project.
+
 > **Language exception.** Doc *prose* is English (rule 6). The only exception is a **presentation
 > artifact** — a generated, human-facing visual such as `new-project/principles.html` — which may be in
 > **whatever language its audience needs** (English by default; the local language when presenting to a
@@ -233,7 +272,7 @@ the owning runbook/script — don't duplicate). Rule: see `ai-runbooks.md` R8.
    `AGENTS.md` carrying the signal-dense build/test/run commands + boundaries (then → router); `llms.txt`
    navigation map (H1 + blockquote summary + link-list) generated from the docs index.
 3. **docs index + dev-rules + GLOSSARY + templates + registries** — created with real frontmatter; the
-   registries seed `[Name]-Main`'s ports/version; empty tables otherwise.
+   registries seed `[Name]-Core`'s ports/version; empty tables otherwise.
 4. **One starter feature/plugin doc** only if the project already has one — else leave the dirs +
    index rows ready, not stubbed with fiction (the [knowledge-refactorer](knowledge-refactorer.md)'s
    no-invention rule applies).

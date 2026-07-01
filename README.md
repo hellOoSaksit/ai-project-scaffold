@@ -31,8 +31,30 @@ AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-f
 
 ---
 
+## 🇹🇭 สรุปภาษาไทย — เข้าใจหลักการใน 1 นาที
+
+> รายละเอียดเต็ม (โค้ด/ตาราง/อ้างอิงงานวิจัย) เป็นภาษาอังกฤษด้านล่างทั้งหมด — ส่วนนี้แค่สรุปให้จับหลักได้ไว ก่อนลงรายละเอียด
+
+**ปัญหาที่ kit นี้แก้:** การตั้งโปรเจกต์ให้ AI coding agent (Claude Code, Cursor, Copilot, Codex ฯลฯ) ทำงาน "แม่นและไม่หลง" จริงๆ แล้วเป็น**ปัญหาสถาปัตยกรรม** ไม่ใช่ปัญหาเขียนพรอมต์ยาวๆ — กฎอยู่ตรงไหน agent หาเอกสารที่ "เป็นเจ้าของ" เรื่องนั้นเจอไหม ข้อมูลซ้ำจนขัดแย้งกันเองหรือเปล่า
+
+**สูตรที่ kit นี้ให้:**
+- **1 router (`CLAUDE.md`)** บาง ๆ ชี้ทาง + **`AGENTS.md`** (มาตรฐานที่ agent 30+ ตัวอ่านได้) + **`llms.txt`** แผนที่นำทาง
+- เอกสารจัดกลุ่ม**ตามงาน** (ไม่ใช่ตามแผนก) ทุกไฟล์มี frontmatter ให้ agent "หยิบเฉพาะไฟล์ที่เป็นเจ้าของงานนั้น" แทนที่จะโหลดทั้งคลัง
+- **Registry เดียวต่อค่า** (`ports.md`, `versions.md`) — เลขไม่มีวันเพี้ยนระหว่างไฟล์
+- **วงจรชีวิต Plugin** — ฟีเจอร์ใหญ่ ๆ แยกสร้างเป็น plugin ก่อน (ถอดออกได้ ไม่พังของอื่น) แล้วค่อย "โปรโมท" เข้า Core เมื่อพร้อม พร้อมแยกชัดระหว่าง **feature plugin** (in-process) กับ **tool plugin** (บริการโครงสร้างพื้นฐานอย่าง Postgres/Redis/MinIO ที่รันคอนเทนเนอร์แยกของตัวเอง) — ดูตัวอย่างเต็มใน [🧩 Examples](#-examples)
+- **`docs-lint` คุมใน CI** — ลิงก์พังหรือ frontmatter ผิดคือ build แดงทันที ไม่ปล่อยให้เอกสาร drift เงียบ ๆ
+
+**ทำไมน่าสนใจ (มีตัวเลขจริง ไม่ใช่เดา):** วัดจากโปรเจกต์จริงด้วย `tiktoken` — โครงสร้างนี้ทำให้ agent โหลดบริบทน้อยลง **83–96%** ต่องาน (ดู [💸 Token economics](#-token-economics--measured-not-guessed)) เพราะโหลดแค่ "เอกสารเจ้าของงาน" ไม่ใช่ทั้งคลังความรู้
+
+**เหมาะกับใคร:** dev ที่เริ่มโปรเจกต์ใหม่และไม่อยากมานั่งเถียงเรื่องโครงสร้างเอง, tech lead ที่อยากมีมาตรฐานเดียวใช้กับหลายทีม/หลายโปรเจกต์, หรือทีมที่เอกสารกระจัดกระจายจนอยากจัดระเบียบใหม่แบบไม่ทำข้อมูลหาย — **ไม่เหมาะ** กับสคริปต์ทิ้งขว้างหรือโปรเจกต์ไฟล์เดียว
+
+**เริ่มยังไง:** ก็อปเนื้อหาไฟล์ [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) (โปรเจกต์ใหม่) หรือ [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) (ปรับโครงสร้างของเดิม) ไปวางเป็น system prompt ให้ AI agent ของคุณ บอกชื่อโปรเจกต์ + สิ่งที่มันทำสั้น ๆ แล้วปล่อยให้ agent จัดโครงสร้างให้ ดูขั้นตอนละเอียดที่ [Installation](#installation)
+
+---
+
 ## Contents
 
+- [🇹🇭 สรุปภาษาไทย](#-สรุปภาษาไทย--เข้าใจหลักการใน-1-นาที)
 - [What is this?](#what-is-this) · [Who is this for?](#who-is-this-for) · [What you get](#what-you-get)
 - [🔒 Security & secret handling](#-security--secret-handling) · [🏅 Quality review & benchmarks](#-quality-review--benchmarks) · [💸 Token economics](#-token-economics--measured-not-guessed) · [🧭 Won't drift as it grows](#-wont-drift-as-it-grows--and-it-remembers-its-mistakes)
 - [The kit](#the-kit) · [🧩 Examples](#-examples) · [Installation](#installation) · [Usage](#usage)
@@ -57,7 +79,7 @@ copy-paste CI gates. The prompts are self-contained and embedded inline — no e
 |---|---|
 | **Developer / engineer** starting a new project or repo | Bootstrap a clean, AI-friendly structure from commit one — no bikeshedding the layout. |
 | **Working with AI coding agents** (Claude Code, Cursor, Copilot, Codex, Gemini CLI…) | Get docs an agent navigates well: one router, `AGENTS.md`/`llms.txt` entry points, progressive disclosure, frontmatter for retrieval. |
-| **Tech lead / architect** standardizing several projects or teams | Install one proven, repeatable shape (umbrella + Main/Docs/Plugin) everyone inherits. |
+| **Tech lead / architect** standardizing several projects or teams | Install one proven, repeatable shape (umbrella + Core/Docs/Plugin) everyone inherits. |
 | **Team with messy / monolithic existing docs** | Refactor existing Markdown into the same architecture — non-destructively, with zero information loss. |
 | **Solo builder / indie hacker** | Skip reinventing structure; start with a battle-tested scaffold and grow from 1 to 100+ services. |
 
@@ -71,7 +93,7 @@ docs, multiple apps, or AI agents working in it.
 - **`llms.txt` navigation map** — [llmstxt.org](https://llmstxt.org/) format for LLM discovery.
 - **Job-first `docs/`** — grouped by job (architecture · features · process · plugin), every file with `title/type/status/keywords/related/summary` frontmatter for RAG.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
-- **Plugin lifecycle** — build big features as separate apps, then fold back into main on gated promotion.
+- **Plugin lifecycle** — build big features as separate apps, then fold back into core on gated promotion.
 - **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI; LF normalized repo-wide via `.gitattributes`.
 - **A worked example** — a full [plugin-architecture](examples/plugin-architecture/) build (Core + Plugin + App + Docs) with an enforceable `system-design.md`, a runnable reference skeleton, and two copy-paste CI gates (manifest schema + a no-plugin→plugin-imports check).
 
@@ -171,7 +193,7 @@ instead of slowly rotting:
 
 | File | Use for |
 |---|---|
-| [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Main,Docs,Plugin}` + every convention (router · frontmatter · registries · plugin lifecycle · runbooks · skills · enforcement). |
+| [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Core,Docs,Plugin}` + every convention (router · frontmatter · registries · plugin lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
 
@@ -183,12 +205,13 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 |---|---|
 | [**Strict Full Plugin Architecture**](examples/plugin-architecture/) | A Core + Plugins app built **inside** the scaffold: a generic `Core` (infra only) + self-contained, removable feature `plugins` + an `App` that assembles and runs the whole system. Ships an enforceable [`system-design.md`](examples/plugin-architecture/system-design.md) and a [runnable reference](examples/plugin-architecture/reference/) with two copy-paste CI gates. |
 
-**The four repos it scaffolds** (specialising the kit's generic `Main` / `Plugin` names to the domain):
+**The four repos it scaffolds** (keeping the kit's generic `Core` / `Plugin` names, tightening `Core` to an infra-only host and adding an `App` composition root):
 
 ```
 [Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt
 ├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth)
-├── [Name]-Plugin/<id>/      # one self-contained feature per folder — removable, never imports another plugin
+├── [Name]-Plugin/<id>/      # one self-contained plugin per folder — removable, never imports another plugin
+│                            #   kind: capability = in-process feature · kind: tool = a backing service (own container)
 ├── [Name]-App/              # composition root — wires Core + chosen plugins, RUNS + integration-tests the system
 └── [Name]-Docs/docs/        # all knowledge (architecture/system-design.md lives here) + registries
 ```
@@ -198,6 +221,7 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 - **One litmus rule** — delete any plugin and `Core` still boots and every other plugin still works (CI matrix).
 - **No plugin→plugin imports** — features talk only through a Core interface, the Event Bus, or a DI-resolved contract; a [`dependency-cruiser`](examples/plugin-architecture/reference/.dependency-cruiser.cjs) gate fails CI on a violation.
 - **Manifest contract** — a [JSON Schema](examples/plugin-architecture/reference/manifest.schema.json) drives load order, version compatibility, and namespacing; the App boots plugins in topological order.
+- **Features vs tools, one manifest field** — `kind: capability` runs in-process (same language as Core); `kind: tool`/`app` is a backing service or app in its own container (ships a `compose` fragment, exposes a connection contract, may be polyglot). Core ships no datastore — a **tool** plugin (`[Name]-Plugin-Tools-Postgres`, `-Redis`, `-MinIO`) brings it.
 
 > Want another example (event-sourcing, multi-tenant SaaS, a CLI tool)? Open an issue — examples are the
 > fastest way to show the structure paying off on a real shape.
@@ -226,6 +250,27 @@ fully self-contained, so a single copy is enough.
 | **Cursor** | New chat → paste as the instruction, or add it to `.cursorrules`. |
 | **GitHub Copilot** | Paste into `.github/copilot-instructions.md`. |
 | **Codex · Gemini CLI · Aider** | Paste as the system / instruction prompt at the start of the session. |
+
+**Recommended agent toolchain** (the structure is inert without an agent that can navigate it — install a
+small, high-leverage plugin/MCP set so it works *with* the conventions). Names are the Claude Code
+plugin/MCP ecosystem; swap the equivalent on another agent. Full rationale: the scaffolder's **rule 10**.
+
+| Plugin / MCP | Why |
+|---|---|
+| `superpowers` | Process skills — brainstorm / TDD / debug as the default operating loop. |
+| `code-review` | Review the diff/PR for bugs + simplifications before merge (pairs with the CI gates). |
+| `github` | Drive PRs/issues from the agent — branch → review → merge in one place. |
+| `context7` | Pull a library's *current* docs on demand so code tracks the installed version — kills API drift. |
+| `claude-md-management` | Keep the `CLAUDE.md` router thin and current as the project grows. |
+| `skill-creator` | Turn a recurring workflow into a `.claude/skills/<name>/SKILL.md`. |
+| `security-guidance` | Flag risky patterns while editing — reinforces the key/secret rules at authoring time. |
+| **Language LSP** (`pyright-lsp` · `typescript-lsp` · your server) | Trustworthy go-to-definition + type-check, far sharper than grep. **Every real-code repo should have one** — swap the server per language. |
+| `serena` | Language-agnostic semantic code search; scales past what grep + one context window can hold. |
+| `hookify` | Compile a project's own rules into auto-enforced guardrail hooks. |
+
+> **Right-size it.** The full set is for a real, growing codebase — a throwaway script needs almost none of
+> it. Personal-workflow optimizations (a token-saver tied to a specific language or writing style) are
+> installed **per developer**, not mandated by the project.
 
 **Run the docs-lint suite** (optional — validates the docs after the agent scaffolds them):
 
