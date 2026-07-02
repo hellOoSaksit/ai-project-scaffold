@@ -90,8 +90,8 @@ Acme-Project/                        # workspace root = its own thin git repo (t
 │   └── postgres/                    # app · kind: tool — a backing service (own container); ships compose.fragment.yml + a `postgres.Connection` contract
 │                                     #   folder = the manifest `id`, lowercase, no `Tools-` prefix (§3.1 naming note)
 │
-├── Acme-App/                        # scaffold · COMPOSITION ROOT — assemble Core + plugins, RUN the full system
-│   ├── README.md                    # scaffold · GitHub overview
+├── Acme-App/                        # app · COMPOSITION ROOT — assemble Core + plugins, RUN the full system (this example adds it)
+│   ├── README.md                    # app · GitHub overview
 │   ├── plugins.config.ts            # app · which plugins are enabled (toggle here for the §15 removal matrix)
 │   ├── src/main.ts                  # app · entrypoint: load Core → register()/boot() enabled plugins in dep order
 │   ├── env/.env.example             # app · secrets gitignored; real values never committed

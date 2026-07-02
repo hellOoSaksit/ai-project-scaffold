@@ -95,11 +95,15 @@ flowchart TD
   L["llms.txt — LLM navigation map"]:::r
   M["[Name]-Core/<br/>primary/host app (frontend + backend)"]:::box
   D["[Name]-Docs/docs/<br/>all knowledge (English, .md, frontmatter)"]:::box
-  S["[Name]-Plugin/<br/>plugins = capability (in-process feature)<br/>or tool (backing service — own container)"]:::box
+  S["[Name]-Plugin/<br/>one self-contained folder per plugin"]:::box
+  SC["&lt;feature&gt;/ — kind: capability<br/>(in-process feature, same language as Core)"]:::box
+  STL["postgres/ · redis/ · minio/ — kind: tool<br/>(backing service · own container + compose fragment)"]:::box
   U --> C --> A --> L
   U --> M
   U --> D
   U --> S
+  S --> SC
+  S --> STL
   classDef u fill:#26294a,stroke:#6366f1,color:#e8e9f3,font-weight:bold;
   classDef r fill:#1f2238,stroke:#8b5cf6,color:#cdd0ec;
   classDef box fill:#181a2e,stroke:#2c2f4a,color:#e8e9f3;
@@ -151,7 +155,7 @@ flowchart TD
   classDef warnb fill:#2a2412,stroke:#f59e0b,color:#ffe9c2;
   classDef okb fill:#102a1f,stroke:#10b981,color:#bff3da;
   </div>
-  <p class="note"><b>Plugin kinds (manifest <code>kind</code>) — features vs tools.</b> <code>capability</code> = in-process feature (same language as Core, DI + Event Bus). <code>tool</code>/<code>app</code> = a backing service (Postgres · Redis · MinIO · a bot gateway) or app in its <b>own container</b> — ships a <code>compose</code> fragment + a connection contract; may be polyglot. Core ships <b>no datastore</b>: a <code>tool</code> plugin (<code>[Name]-Plugin-Tools-&lt;Infra&gt;</code>) brings it. See the <a href="../examples/plugin-architecture/system-design.md">plugin-architecture example §3.1</a>.</p>
+  <p class="note"><b>Plugin kinds (manifest <code>kind</code>) — features vs tools.</b> <code>capability</code> = in-process feature (same language as Core, DI + Event Bus). <code>tool</code>/<code>app</code> = a backing service (Postgres · Redis · MinIO · a bot gateway) or app in its <b>own container</b> — ships a <code>compose</code> fragment + a connection contract; may be polyglot. Core ships <b>no datastore</b>: a <code>tool</code> plugin (folder = the lowercase manifest <code>id</code>, e.g. <code>postgres/</code>) brings it. <code>[Name]-Plugin-Tools-&lt;Infra&gt;</code> is a <i>repo-name</i> convention for the later repo-per-plugin phase — never the <code>id</code> or its folder. See the <a href="../examples/plugin-architecture/system-design.md">plugin-architecture example §3.1</a>.</p>
 </section>
 
 <!-- 4 -->

@@ -11,7 +11,7 @@ summary: >
   services resolved via DI. This is the enforceable contract: responsibilities, the plugin manifest, load
   order, versioning, fault isolation, namespacing, shared-data ownership, security boundaries, contract
   testing, observability, and the CI gates that make every rule real instead of aspirational.
-updated: 2026-06-29
+updated: 2026-07-02
 ---
 
 # System Design — Strict Full Plugin Architecture

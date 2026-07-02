@@ -19,6 +19,9 @@ jobs:
       - name: Run documentation test suite
         run: bash scripts/docs-lint.sh
 
+      - name: Run the reference frontmatter/link validator (kit/docs-lint.py)
+        run: python3 kit/docs-lint.py .
+
       - name: Check Markdown links
         uses: lycheeverse/lychee-action@v2
         with:

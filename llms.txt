@@ -1,0 +1,27 @@
+# ai-project-scaffold
+
+> A portable kit for starting or restructuring a project with an AI-friendly layout that coding agents
+> navigate well: one CLAUDE.md router + AGENTS.md + llms.txt entry points, job-first docs with frontmatter,
+> single-source-of-truth registries, a plugin lifecycle (capability vs tool), and a docs-lint CI gate.
+> Ships as two self-contained system prompts, a visual overview, a reference validator, and a worked
+> plugin-architecture example.
+
+## Kit
+- [new-project-scaffold.md](kit/new-project-scaffold.md): canonical system prompt — bootstrap a project from zero (umbrella + Core/Docs/Plugin, conventions, plugin lifecycle, agent toolchain).
+- [knowledge-refactorer.md](kit/knowledge-refactorer.md): system prompt — refactor an existing project's Markdown into this architecture, non-destructively.
+- [principles.html](kit/principles.html): visual overview (mermaid) of the structure and workflows — a presentation artifact; the .md prompts are the source of truth.
+- [docs-lint.py](kit/docs-lint.py): reference validator the scaffolder installs as scripts/docs-lint.py (frontmatter + links + anchors + related graph; stdlib-only).
+
+## Example
+- [examples/plugin-architecture/README.md](examples/plugin-architecture/README.md): how a strict Core + Plugins app maps onto the scaffold.
+- [system-design.md](examples/plugin-architecture/system-design.md): the enforceable plugin contract — manifest, load order, kinds (capability/tool/app), isolation, CI gates.
+- [reference/README.md](examples/plugin-architecture/reference/README.md): runnable skeleton + the two copy-paste CI gates (manifest schema + no plugin→plugin imports).
+
+## Docs
+- [docs/README.md](docs/README.md): this repo's docs index.
+- [measurements.md](docs/evidence/measurements.md): verbatim tiktoken token-economics counts + a docs-lint pass/fail demonstration.
+
+## Meta
+- [README.md](README.md): project overview, who it's for, token economics, references.
+- [CHANGELOG.md](CHANGELOG.md): notable changes.
+- [CONTRIBUTING.md](.github/CONTRIBUTING.md): how to propose a change (keep the two prompts in sync).

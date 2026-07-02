@@ -224,6 +224,7 @@ instead of slowly rotting:
 | [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Core,Docs,Plugin}` + every convention (router · frontmatter · registries · plugin lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
+| [`kit/docs-lint.py`](kit/docs-lint.py) | **Reference validator** the scaffolder installs as `scripts/docs-lint.py` (rule 8) — stdlib-only, UTF-8-safe; enforces required frontmatter + valid `type`/`status`, resolvable relative links, GitHub-style anchors, and the `related:` graph. Copy it into your docs repo and wire CI at it. |
 
 ## 🧩 Examples
 
@@ -233,16 +234,18 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 |---|---|
 | [**Strict Full Plugin Architecture**](examples/plugin-architecture/) | A Core + Plugins app built **inside** the scaffold: a generic `Core` (infra only) + self-contained, removable feature `plugins` + an `App` that assembles and runs the whole system. Ships an enforceable [`system-design.md`](examples/plugin-architecture/system-design.md) and a [runnable reference](examples/plugin-architecture/reference/) with two copy-paste CI gates. |
 
-**The four repos it scaffolds** (keeping the kit's generic `Core` / `Plugin` names, tightening `Core` to an infra-only host and adding an `App` composition root):
+**The four repos this example uses** — the scaffolder creates the three `[Name]-{Core,Docs,Plugin}` repos;
+this example keeps those names (tightening `Core` to an infra-only host) and **adds a fourth, `[Name]-App`**,
+the composition root that assembles and runs the system:
 
 ```
-[Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt
-├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth); ships no datastore
-├── [Name]-Plugin/           # every plugin is a self-contained folder here — removable, never imports another
+[Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt        (scaffolder)
+├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth); ships no datastore  (scaffolder)
+├── [Name]-Plugin/           # every plugin is a self-contained folder here — removable, never imports another  (scaffolder)
 │   ├── <feature>/           #   kind: capability — an in-process feature (crm, chat, …), same language as Core
 │   └── postgres/            #   kind: tool — a backing service in its own container (compose fragment + a connection contract)
-├── [Name]-App/              # composition root — wires Core + chosen plugins, RUNS + integration-tests the system
-└── [Name]-Docs/docs/        # all knowledge (architecture/system-design.md lives here) + registries
+├── [Name]-App/              # composition root — wires Core + chosen plugins, RUNS + integration-tests the system  (this example adds)
+└── [Name]-Docs/docs/        # all knowledge (architecture/system-design.md lives here) + registries  (scaffolder)
 ```
 
 > **Grows to repo-per-plugin.** The tree above is the single-repo default (plugins are folders under
@@ -307,14 +310,17 @@ plugin/MCP ecosystem; swap the equivalent on another agent. Full rationale: the 
 > it. Personal-workflow optimizations (a token-saver tied to a specific language or writing style) are
 > installed **per developer**, not mandated by the project.
 
-**Run the docs-lint suite** (optional — validates the docs after the agent scaffolds them):
+**Run the docs-lint suite.** Two validators, don't conflate them:
 
 ```bash
-bash scripts/docs-lint.sh
+bash scripts/docs-lint.sh      # validates THIS repo (required files · balanced frontmatter · internal links)
+python3 kit/docs-lint.py .     # the reference your scaffolded project installs as scripts/docs-lint.py
 ```
 
-Needs only `bash` (built in on macOS/Linux; on Windows use Git Bash or WSL). It also runs automatically in CI
-on every push and pull request.
+`docs-lint.sh` needs only `bash` (built in on macOS/Linux; on Windows use Git Bash or WSL) and runs in CI
+on every push and pull request. `kit/docs-lint.py` is the richer, stdlib-only validator (no pip install)
+that the scaffolder drops into a new project's docs repo — it adds required-frontmatter, GitHub-anchor, and
+`related:`-graph checks; copy it in and point your project's CI at it.
 
 ## Usage
 

@@ -9,7 +9,7 @@ summary: >
   one umbrella `[Name]-Project/` holding `[Name]-Core`, `[Name]-Docs`, `[Name]-Plugin`, plus the
   full conventions system (router, frontmatter, registries, plugin lifecycle, runbooks, docs-lint).
   Self-contained — everything the scaffolder needs is described inline.
-updated: 2026-06-20
+updated: 2026-07-02
 ---
 
 # System Prompt — New-project scaffolder
@@ -117,7 +117,7 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 │                                #   "file lists" of `[name](path): note` links — order per spec, no other headings
 ├── [Name]-Core/                 # the primary/host app everything plugs into (frontend + backend, or whatever the app is)
 │   └── README.md                # GitHub overview for humans — NO project knowledge, NOT an index
-├── [Name]-Plugin/           # the plugin line — one self-contained folder per plugin (may be empty at first)
+├── [Name]-Plugin/               # the plugin line — one self-contained folder per plugin (may be empty at first)
 │   ├── <feature>/               # kind: capability — an in-process feature (same language as Core)
 │   └── <tool>/                  # kind: tool — a backing service (postgres/redis/minio: own container + compose
 │                                #   fragment; Core ships no datastore). Folder = the manifest `id` (lowercase,
@@ -125,7 +125,7 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 │                                #   [Name]-Plugin-Tools-<Infra>/. See rule 5.
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
-    └── docs/                    # ALL project knowledge, centralized, English — every file has frontmatter
+    ├── docs/                    # ALL project knowledge, centralized, English — every file has frontmatter
         ├── README.md            # the docs index / map (read first)
         ├── GLOSSARY.md          # domain terms
         ├── [name]-dev-rules.md  # the operating contract (type: rule; §0…) — the detail the router points to
@@ -136,7 +136,7 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts (scaffolder + refactorer) + principles.html (structure overview)
         └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
-        scripts/docs-lint.py     # (sibling of docs/) link/anchor/frontmatter validator → run in CI
+    └── scripts/docs-lint.py     # sibling of docs/ — link/anchor/frontmatter validator → run in CI
 ```
 
 > Use the uniform `[Name]-{Core,Docs,Plugin}` naming for the three child repos under the umbrella.
@@ -231,7 +231,11 @@ plugin · **R8 create/manage a skill**).
 
 **8. Enforcement** — ship `scripts/docs-lint.py` (frontmatter + link/anchor/related validator; make its
 output UTF-8-safe) and wire a CI workflow per repo (docs-lint for the docs repo; tests + a "version is
-config-driven, not hardcoded" guard for the app/plugin repos).
+config-driven, not hardcoded" guard for the app/plugin repos). A **ready-to-copy reference** lives beside
+this prompt at [`docs-lint.py`](docs-lint.py) — stdlib-only (no pip install), UTF-8-safe, and already
+enforces all five checks (required frontmatter + valid `type`/`status`, balanced frontmatter, resolvable
+relative links, GitHub-style anchors, and the `related:` graph); drop it in as `scripts/docs-lint.py` and
+point CI at it.
 
 **9. Skills** — when a multi-step workflow recurs (≥~3×) or is high-value, wrap it as
 `.claude/skills/<name>/SKILL.md` (frontmatter `name` + `description`=trigger; body **thin**, pointing to

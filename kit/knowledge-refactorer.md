@@ -7,7 +7,7 @@ related: [./new-project-scaffold.md, ../README.md, ./principles.html]
 summary: >
   System prompt for refactoring existing Markdown into a clean knowledge architecture:
   one shared root CLAUDE.md router, README = GitHub, all knowledge in docs/ (English, AI-first).
-updated: 2026-06-20
+updated: 2026-07-02
 ---
 
 # System Prompt — Knowledge Refactorer (Existing Project)
@@ -144,7 +144,8 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 > [scaffolder](new-project-scaffold.md), which is the **canonical source** for both. When a convention
 > changes, edit it in the scaffolder first, then reflect it here in the same change — so the two prompts
 > never drift. **Scope:** the refactorer brings the **docs** into this shape; the enforcement layer it
-> shows (`scripts/docs-lint.py` + CI), `process/ai-runbooks.md`, and the recommended **agent toolchain**
+> shows (`scripts/docs-lint.py` — reference impl in [`docs-lint.py`](docs-lint.py) — + CI),
+> `process/ai-runbooks.md`, and the recommended **agent toolchain**
 > (the scaffolder's rule 10 — process skills · review · VCS · fresh-docs · LSP · semantic search · guardrail
 > hooks) are *installed by the scaffolder* — if they are missing in an existing project, flag them in the
 > before→after map rather than inventing them.
@@ -157,13 +158,13 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 ├── llms.txt                     # LLM navigation map (llmstxt.org): H1 + blockquote summary + H2 link-lists
 ├── [Name]-Core/                 # the primary/host application
 │   └── README.md                # GitHub overview (humans) — NO project knowledge, NOT an index, NO CLAUDE stub
-├── [Name]-Plugin/           # plugins (may be empty at first) — one self-contained folder each, folder = manifest `id`
+├── [Name]-Plugin/               # plugins (may be empty at first) — one self-contained folder each, folder = manifest `id`
 │   ├── <feature>/               # kind: capability — an in-process feature (same language as Core)
 │   └── <tool>/                  # kind: tool — a backing service (postgres/redis/minio: own container + compose fragment)
 │                                #   grows to repo-per-plugin: [Name]-Plugin-<Feature>/ · [Name]-Plugin-Tools-<Infra>/
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
-    └── docs/                    # ALL project knowledge, centralized (English) — every file has frontmatter
+    ├── docs/                    # ALL project knowledge, centralized (English) — every file has frontmatter
         ├── README.md            # the docs index / map (read first)
         ├── GLOSSARY.md          # domain terms (resolve once, not per session)
         ├── [name]-dev-rules.md  # the operating contract (type: rule; §0…)
@@ -174,7 +175,7 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts + structure overview (this file lives here)
         └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
-        scripts/docs-lint.py     # (sibling of docs/) link/anchor/frontmatter validator → run in CI
+    └── scripts/docs-lint.py     # sibling of docs/ — link/anchor/frontmatter validator → run in CI
 ```
 
 ## Output Contract

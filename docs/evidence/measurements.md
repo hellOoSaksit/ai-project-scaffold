@@ -1,3 +1,16 @@
+---
+title: Evidence — token economics & anti-drift, measured
+type: reference
+status: active
+keywords: [evidence, measurements, tiktoken, token economics, progressive disclosure, docs-lint, anti-drift, reproducible]
+related: [../README.md, ../../README.md, ../../kit/new-project-scaffold.md]
+summary: >
+  Raw, reproducible measurements behind the README's token-economics and anti-drift claims: verbatim
+  tiktoken (cl100k_base) counts on a real 42-doc project (83–96% fewer tokens per task) plus a docs-lint
+  pass/fail demonstration. Numbers and tool output are recorded, not estimated.
+updated: 2026-07-02
+---
+
 # Evidence — measured, reproducible (not floaty)
 
 Raw, recorded results behind the [Token economics](../../README.md#-token-economics--measured-not-guessed)

@@ -6,39 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- **Every umbrella tree now shows the capability/tool split.** The project-root tree diagrams still drew a
-  single `[Name]-Plugin/<id>/` (or `<app>/`) line, so the feature-vs-tool separation was invisible at the
-  structure level. Updated the trees in the README Examples section, `kit/new-project-scaffold.md`,
-  `kit/knowledge-refactorer.md` (Target Shape), and `kit/principles.html` (§1 mermaid) to show a
-  `kind: capability` feature folder **and** a `kind: tool` backing-service folder (postgres/redis/minio,
-  own container + compose fragment), and to note the repo-per-plugin evolution
-  (`[Name]-Plugin-<Feature>/` · `[Name]-Plugin-Tools-<Infra>/`) matching a real deployed project — while
-  keeping the single-repo default that the example's CI gates assume.
-
-### Fixed
-- **README Thai summary was missing the agent-toolchain recommendation** — the English body has a full
-  "Recommended agent toolchain" table (scaffolder rule 10) but the `🇹🇭 สรุปภาษาไทย` section never
-  mentioned it, so a Thai-reading visitor could miss the whole install-these-plugins step. Added a
-  "ต้องติดตั้ง plugin/MCP อะไรให้ agent บ้าง" section listing all 10 (superpowers, code-review, github,
-  context7, claude-md-management, skill-creator, security-guidance, a language LSP, serena, hookify), and
-  added a matching "**A recommended agent toolchain**" bullet to the English **What you get** list so the
-  feature is visible there too, not only buried in Installation.
-- **Tool-plugin naming was inconsistent with its own schema.** The plugin-kinds tree examples used a
-  `Tools-Postgres/`-style folder name, but the manifest `id` pattern is lowercase-only (`^[a-z][a-z0-9-]*$`)
-  and namespaces everything (§6) — so the folder must be `postgres/`, matching the `id`. Fixed the tree
-  diagrams in `kit/new-project-scaffold.md` (which previously had **no** tool-plugin example at all),
-  `examples/plugin-architecture/system-design.md` §1/§3.1, and the example README, and clarified that
-  `[Name]-Plugin-Tools-<Infra>` is a *repo-name* convention (used only once a tool is promoted to its own
-  repo) — never the manifest `id` or its folder.
-- **Added a real `postgres` tool-plugin example** to `examples/plugin-architecture/reference/` — the
-  runnable skeleton previously only demonstrated `capability` plugins (`inventory`, `order`). New:
-  `plugins/postgres/{manifest.json,compose.fragment.yml,index.ts}` (kind: tool, `secrets`, `compose`),
-  `core/contracts/postgres-connection.ts` (the published `postgres.Connection` contract, same pattern as
-  `stock-service.ts`), wired into `app/plugins.config.ts`, and documented in `reference/README.md`.
-- Updated the top-level README's Examples section to point at the real `postgres` reference example and
-  the same id-vs-repo-name clarification, instead of the stale `[Name]-Plugin-Tools-Postgres` naming.
-
 ### Added
 - **README Thai summary** — a concise `🇹🇭 สรุปภาษาไทย` section near the top (linked from **Contents**)
   covering the same principles as the English body (router/AGENTS.md/llms.txt, job-first docs, registries,
@@ -61,8 +28,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `typescript-lsp`), `serena`, `hookify`) with a "right-size it / personal tools are per-developer" note.
   Mirrored into `kit/knowledge-refactorer.md` (flag-if-missing scope note), `kit/principles.html` (new
   section 10), and the README **Installation** section.
+- **A real `postgres` tool-plugin example** in `examples/plugin-architecture/reference/` — the runnable
+  skeleton previously only demonstrated `capability` plugins (`inventory`, `order`). New:
+  `plugins/postgres/{manifest.json,compose.fragment.yml,index.ts}` (kind: tool, `secrets`, `compose`),
+  `core/contracts/postgres-connection.ts` (the published `postgres.Connection` contract, same pattern as
+  `stock-service.ts`), wired into `app/plugins.config.ts`, and documented in `reference/README.md`.
+- **`kit/docs-lint.py` — a ready-to-copy reference validator** for the `scripts/docs-lint.py` the scaffolder
+  prescribes (rule 8), which previously had **no** shipped implementation (every project reinvented it).
+  Stdlib-only, UTF-8-safe; enforces required frontmatter + valid `type`/`status`, balanced frontmatter,
+  resolvable relative links, GitHub-style anchors (correct across scripts — e.g. Thai), and the `related:`
+  graph. Referenced from the scaffolder rule 8, the refactorer scope note, and the README kit table.
+- **This repo now dogfoods its own structure** — added a root `CLAUDE.md` router, `AGENTS.md`, and `llms.txt`
+  entry map; a `docs/README.md` index; and frontmatter on `docs/evidence/measurements.md` (it lives under
+  `docs/` and so was previously in breach of the kit's own frontmatter rule).
 
 ### Changed
+- **Every umbrella tree now shows the capability/tool split.** The project-root tree diagrams still drew a
+  single `[Name]-Plugin/<id>/` (or `<app>/`) line, so the feature-vs-tool separation was invisible at the
+  structure level. Updated the trees in the README Examples section, `kit/new-project-scaffold.md`,
+  `kit/knowledge-refactorer.md` (Target Shape), and `kit/principles.html` (§1 mermaid) to show a
+  `kind: capability` feature folder **and** a `kind: tool` backing-service folder (postgres/redis/minio,
+  own container + compose fragment), and to note the repo-per-plugin evolution
+  (`[Name]-Plugin-<Feature>/` · `[Name]-Plugin-Tools-<Infra>/`) matching a real deployed project — while
+  keeping the single-repo default that the example's CI gates assume.
 - **Renamed the generic host repo `[Name]-Main` → `[Name]-Core`** across the kit for one vocabulary
   (`[Name]-{Core,Docs,Plugin}`), and reframed it as *the primary/host app everything plugs into + the
   promotion target*. Lifecycle prose followed (`fold into core`, `dependency direction core→plugin`,
@@ -71,6 +59,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (matching the kit) and tightens it to an infra-only host rather than renaming `Main`→`Core`. The git
   branch `main` and `src/main.ts` entrypoints are unchanged; earlier released changelog entries keep their
   original wording.
+- **`scripts/docs-lint.sh` now checks internal links** — it validates that every relative Markdown link
+  resolves and **fails the build** on a broken one (previously only the advisory lychee CI step touched
+  links, with `fail: false`), so this repo's own tooling now backs the "broken link → build red" claim.
+- **Clarified that `[Name]-App` is added by the example, not scaffolded.** The scaffolder creates three
+  repos (`Core`/`Docs`/`Plugin`); the plugin-architecture example adds a fourth (`App`). Re-marked the
+  `Acme-App/` tree rows in the example README as `app` (was `scaffold`) and reworded the README Examples
+  heading to "the four repos this example uses".
+
+### Fixed
+- **Stale `updated:` frontmatter dates.** `kit/new-project-scaffold.md`, `kit/knowledge-refactorer.md`
+  (both `2026-06-20`) and `examples/plugin-architecture/system-design.md` (`2026-06-29`) had not been
+  bumped to their real edit date despite substantive later edits — a breach of the kit's own docs-discipline
+  and frontmatter schema. Set to the edit date.
+- **`kit/principles.html` still misused the repo-name convention as the plugin id.** The §3 note read
+  "a `tool` plugin (`[Name]-Plugin-Tools-<Infra>`) brings it" — the exact `id` vs repo-name confusion an
+  earlier commit fixed everywhere *except* this HTML mirror. Corrected it to "folder = the lowercase `id`,
+  e.g. `postgres/`" and split the §1 mermaid to show separate `capability` and `tool` folders, matching the
+  change the changelog already claimed.
+- **README Thai summary was missing the agent-toolchain recommendation** — the English body has a full
+  "Recommended agent toolchain" table (scaffolder rule 10) but the `🇹🇭 สรุปภาษาไทย` section never
+  mentioned it, so a Thai-reading visitor could miss the whole install-these-plugins step. Added a
+  "ต้องติดตั้ง plugin/MCP อะไรให้ agent บ้าง" section listing all 10 (superpowers, code-review, github,
+  context7, claude-md-management, skill-creator, security-guidance, a language LSP, serena, hookify), and
+  added a matching "**A recommended agent toolchain**" bullet to the English **What you get** list so the
+  feature is visible there too, not only buried in Installation.
+- **Tool-plugin naming was inconsistent with its own schema.** The plugin-kinds tree examples used a
+  `Tools-Postgres/`-style folder name, but the manifest `id` pattern is lowercase-only (`^[a-z][a-z0-9-]*$`)
+  and namespaces everything (§6) — so the folder must be `postgres/`, matching the `id`. Fixed the tree
+  diagrams in `kit/new-project-scaffold.md` (which previously had **no** tool-plugin example at all),
+  `examples/plugin-architecture/system-design.md` §1/§3.1, and the example README, and clarified that
+  `[Name]-Plugin-Tools-<Infra>` is a *repo-name* convention (used only once a tool is promoted to its own
+  repo) — never the manifest `id` or its folder.
+- Updated the top-level README's Examples section to point at the real `postgres` reference example and
+  the same id-vs-repo-name clarification, instead of the stale `[Name]-Plugin-Tools-Postgres` naming.
 
 ## [0.3.0] - 2026-06-29
 
