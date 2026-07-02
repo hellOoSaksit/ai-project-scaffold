@@ -1,9 +1,8 @@
-# AI Project Scaffold — an AI-friendly project structure & knowledge architecture
+# AI Project Scaffold — an AI-friendly project structure for coding agents
 
-> A portable, self-contained kit for starting **or** restructuring any software project with a clean,
-> **AI-friendly** layout that coding agents (**Claude Code, Cursor, GitHub Copilot, Codex, Gemini CLI,
-> Aider**) navigate well — one `CLAUDE.md` router, `AGENTS.md` + `llms.txt` entry points, job-first docs
-> with frontmatter, single-source-of-truth registries, and a `docs-lint` CI check.
+> **Start any project — or untangle a messy one — with a layout AI coding agents actually navigate.**
+> One `CLAUDE.md` router · `AGENTS.md` + `llms.txt` entry points · job-first docs with frontmatter ·
+> single-source-of-truth registries · a plugin lifecycle · a secure-coding baseline · and CI that fails on drift.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Design review: 100/100](https://img.shields.io/badge/design%20review-100%2F100-brightgreen.svg)](#-quality-review--benchmarks)
@@ -24,16 +23,43 @@
 [![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](.github/SECURITY.md)
 [![Live overview](https://img.shields.io/badge/live-visual%20overview-8b5cf6.svg)](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)
 
+---
+
+**The pitch in three lines.** Setting up a repo so AI agents stay accurate is an *architecture* problem, not a
+prompting one — where the rules live, how an agent finds the one doc it needs, how facts stop drifting across
+files. This kit is the proven layout, dropped in as **one copy-paste system prompt**, so your agent lays the
+structure down for you. Measured payoff on a real 42-doc project: **83–96% fewer context tokens per task**.
+
+|  |  |
+|---|---|
+| 🧩 **What it is** | Two self-contained system prompts — *scaffold a new project* · *refactor an existing one* — plus a visual overview and a worked plugin-architecture example. |
+| 🤖 **Works with** | Claude Code · Cursor · GitHub Copilot · Codex · Gemini CLI · Aider — anything that reads `CLAUDE.md` / `AGENTS.md` / `llms.txt`. |
+| 📉 **Measured payoff** | **83–96%** fewer context tokens per task · **zero** doc drift (CI-enforced) · **secure-by-default** coding rules. |
+| ⚡ **To install** | Nothing to compile or `npm install` — [30-second quick start ↓](#-quick-start). |
+
+> ⭐ **If this saves you setup time, star the repo** — it helps others find it.
+
 **Keywords:** AI project structure · Claude Code template · `CLAUDE.md` / `AGENTS.md` / `llms.txt` starter ·
 AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-first docs · context engineering.
 
-> ⭐ **If this saves you setup time, star the repo** — it helps others find it.
+---
+
+## Contents
+
+- [🇹🇭 สรุปภาษาไทย](#-สรุปภาษาไทย) · [What is this?](#what-is-this) · [⚡ Quick start](#-quick-start) · [Who is this for?](#who-is-this-for) · [What you get](#what-you-get)
+- [🔒 Security](#-security--secret-handling) · [🏅 Quality review](#-quality-review--benchmarks) · [💸 Token economics](#-token-economics--measured-not-guessed) · [🧭 Won't drift as it grows](#-wont-drift-as-it-grows--and-it-remembers-its-mistakes)
+- [The kit](#the-kit) · [🧩 Examples](#-examples) · [Installation](#installation) · [Usage](#usage) · [📚 References & research](#-references--research) · [Contributing](#contributing) · [License](#license)
 
 ---
 
 ## 🇹🇭 สรุปภาษาไทย
 
-> รายละเอียดเต็ม (โค้ด ตาราง งานวิจัยอ้างอิง) อยู่เป็นภาษาอังกฤษด้านล่างทั้งหมด ส่วนนี้อธิบายหลักการแบบง่ายๆ ก่อน
+> รายละเอียดเต็ม (โค้ด ตาราง งานวิจัยอ้างอิง) อยู่เป็นภาษาอังกฤษด้านล่างทั้งหมด ส่วนนี้อธิบายหลักการแบบง่ายๆ ก่อน — **คลิกกางอ่านได้เลย**
+
+<details>
+<summary><b>อ่านสรุปภาษาไทยแบบเต็ม</b> — ปัญหาคืออะไร · มีอะไรบ้าง · ต้องลง plugin อะไร · ทำไมคุ้ม · เริ่มยังไง</summary>
+
+<br>
 
 **ปัญหาคืออะไร**
 
@@ -78,15 +104,7 @@ AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-f
 
 เปิดไฟล์ [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) (ถ้าเริ่มโปรเจกต์ใหม่) หรือ [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) (ถ้ามีโปรเจกต์เดิมอยู่แล้วอยากจัดเอกสารใหม่) copy เนื้อหาทั้งไฟล์ไปวางเป็น system prompt ให้ AI agent บอกชื่อโปรเจกต์กับสิ่งที่มันทำสั้นๆ แล้วปล่อยให้ AI จัดโครงสร้างให้เลย ขั้นตอนละเอียดอยู่ที่ [Installation](#installation)
 
----
-
-## Contents
-
-- [🇹🇭 สรุปภาษาไทย](#-สรุปภาษาไทย)
-- [What is this?](#what-is-this) · [Who is this for?](#who-is-this-for) · [What you get](#what-you-get)
-- [🔒 Security & secret handling](#-security--secret-handling) · [🏅 Quality review & benchmarks](#-quality-review--benchmarks) · [💸 Token economics](#-token-economics--measured-not-guessed) · [🧭 Won't drift as it grows](#-wont-drift-as-it-grows--and-it-remembers-its-mistakes)
-- [The kit](#the-kit) · [🧩 Examples](#-examples) · [Installation](#installation) · [Usage](#usage)
-- [📚 References & research](#-references--research) · [Contributing](#contributing) · [License](#license)
+</details>
 
 ---
 
@@ -100,6 +118,24 @@ a solo app to 100+ services — without reinventing the layout each time.
 It ships as **two system prompts** (one to scaffold a new project, one to refactor an existing one), a
 **visual overview**, and a **worked example** — a full plugin architecture with a runnable reference and
 copy-paste CI gates. The prompts are self-contained and embedded inline — no external reference repo required.
+
+## ⚡ Quick start
+
+**No install, no build** — you "install" the kit by handing one prompt to your agent.
+
+1. **Pick your prompt** — new project → [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) · an existing repo/docs to clean up → [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md).
+2. **Paste it** as the system / instruction prompt in Claude Code, Cursor, Copilot, Codex, Gemini CLI, or Aider.
+3. **Give it your project name + one line** on what it builds. The agent lays down the structure; you review, then commit.
+
+```bash
+# want the whole kit locally (both prompts + the visual overview + the examples + the docs-lint suite)?
+git clone https://github.com/hellOoSaksit/ai-project-scaffold.git
+```
+
+> ⚠️ **Refactoring an existing repo? Back up first** — the refactorer moves and rewrites real files. Work on a
+> clean git tree and a new branch, and apply only after you approve the before→after map (full guardrails in
+> [Usage](#usage)). Deeper setup — per-agent placement, the recommended toolchain, running the linters — is in
+> [Installation](#installation).
 
 ## Who is this for?
 
@@ -122,7 +158,8 @@ docs, multiple apps, or AI agents working in it.
 - **Job-first `docs/`** — grouped by job (architecture · features · process · plugin), every file with `title/type/status/keywords/related/summary` frontmatter for RAG.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
 - **Plugin lifecycle** — build big features as separate apps, then fold back into core on gated promotion.
-- **Enforcement** — `docs-lint` (frontmatter + link/anchor validator) wired into CI; LF normalized repo-wide via `.gitattributes`.
+- **A secure-coding baseline** — always-on **rule 8** (*secure by default*) + a scaffolded `architecture/security.md` with an OWASP-aligned MUST table (injection · XSS · IDOR · auth · uploads · SSRF · dependency audits), stack decisions recorded per row.
+- **Enforcement** — a shipped, stdlib-only [`docs-lint.py`](kit/docs-lint.py) (frontmatter + link/anchor/`related` validator) **plus** a `docs-lint.sh` that fails the build on a broken internal link, both wired into CI; LF normalized repo-wide via `.gitattributes`.
 - **A worked example** — a full [plugin-architecture](examples/plugin-architecture/) build (Core + Plugin + App + Docs) with an enforceable `system-design.md`, a runnable reference skeleton, and two copy-paste CI gates (manifest schema + a no-plugin→plugin-imports check).
 - **A recommended agent toolchain** — a curated plugin/MCP set (process skills, code review, VCS, fresh library docs, router upkeep, a language LSP, semantic search, guardrail hooks) so the agent works *with* the structure above instead of around it — see [Installation](#installation).
 
@@ -154,21 +191,26 @@ Found a vulnerability? See **[`SECURITY.md`](.github/SECURITY.md)** — a privat
 ## 🏅 Quality review & benchmarks
 
 This kit is **continuously reviewed against published best-practice standards** — not shipped and forgotten.
-The latest structured design review used the 5-dimension rubric below, **benchmarked against the
-[references](#-references--research)**, and scored it **100/100**: drift between the two prompts eliminated,
-the visual overview validated, and every internal link checked.
+The latest structured design review (**as of `v0.4.1`, 2026-07-02**) re-ran the 5-dimension rubric below,
+**benchmarked against the [references](#-references--research)**, after the security + self-enforcement work
+landed. It now checks a **shipped** enforcement layer (a real `docs-lint.py` + a link-check that *fails* CI),
+an **OWASP-aligned secure-coding baseline**, and the repo **dogfooding its own structure** — and still scores
+**100/100**. This pass is honest about how it got there: it *found and fixed* real drift (a stale naming slip
+in the visual overview, un-bumped `updated:` dates, an enforcement file that was described but never shipped)
+rather than asserting there was none — the score reflects the **corrected** state, re-runnable below.
 
-| Dimension | Score | What was checked |
+| Dimension | Score | What was checked (as of `v0.4.1`) |
 |---|:--:|---|
-| **Structure / Clarity** | 5/5 | umbrella + job-first docs + progressive disclosure; single-root vs nested-monorepo justified |
-| **Completeness** | 5/5 | router · entry files · frontmatter · registries · plugin lifecycle · runbooks · enforcement · CI |
-| **Best-practice alignment** | 5/5 | matches the **AGENTS.md** & **llms.txt** specs; acknowledges **Diátaxis** & the nested-monorepo pattern |
-| **Maintainability** | 5/5 | one canonical source + a bidirectional sync rule → **zero drift** between the two prompts |
-| **AI-readability** | 5/5 | frontmatter for retrieval · English · signal-dense entry files · intent encoded in `type:` |
+| **Structure / Clarity** | 5/5 | umbrella + job-first docs + progressive disclosure; single-root vs nested-monorepo justified; the repo now **dogfoods** the layout (its own root `CLAUDE.md`/`AGENTS.md`/`llms.txt` + `docs/` index) |
+| **Completeness** | 5/5 | router · entry files · frontmatter · registries · plugin lifecycle · runbooks · **secure-coding baseline (rule 8 + `architecture/security.md`)** · enforcement · CI |
+| **Best-practice alignment** | 5/5 | matches the **AGENTS.md** & **llms.txt** specs; **OWASP-aligned** security baseline; acknowledges **Diátaxis** & the nested-monorepo pattern |
+| **Maintainability** | 5/5 | one canonical source + a bidirectional sync rule → **zero drift** between the prompts; enforcement is now **shipped & automated** (reference `docs-lint.py` + a link-check that fails the build), not just described |
+| **AI-readability** | 5/5 | frontmatter for retrieval · English · signal-dense entry files · intent encoded in `type:`; verified by the repo navigating **by its own rules** |
 | **Total** | **100/100** | structured design review, benchmarked to the sources below |
 
 > **Transparency:** the score is a *structured self-review* against external standards, not a third-party
-> audit. The rubric and every reference are public — so you can re-run the judgement yourself.
+> audit. The rubric and every reference are public, and the enforcement checks are now runnable
+> (`bash scripts/docs-lint.sh` · `python3 kit/docs-lint.py .`) — so you can re-run the judgement yourself.
 
 **Two different scores, kept separate (don't conflate them):**
 

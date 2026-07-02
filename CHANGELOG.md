@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **README restructured for readability.** Added a hero *"at a glance"* panel with the headline stat,
+  moved a 30-second **Quick start** near the top, made the long `🇹🇭 สรุปภาษาไทย` summary collapsible
+  (`<details>`) so it no longer buries the English intro, and reordered the sections into a clearer
+  narrative. Also refreshed the **Quality review** section to reflect `v0.4.1` (shipped enforcement +
+  OWASP-aligned security baseline + the repo dogfooding its own structure) and to be honest that the pass
+  *found and fixed* real drift rather than asserting none. Every cross-file anchor (the ones
+  `docs/evidence/measurements.md` and the badges depend on) was preserved; both linters stay green.
+
 ## [0.4.1] - 2026-07-02
 
 ### Security
