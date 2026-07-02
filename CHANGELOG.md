@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Anti-bloat docs-hygiene guards** — the reference `kit/docs-lint.py` now guards the docs an agent
+  re-reads *every session* from silent, append-only bloat: it **fails** when `process/session-handoff.md`
+  passes a line ceiling (~350) or stacks more than a couple of `SESSION-END STATE` blocks, **warns** when
+  any curated doc passes ~600 lines (usually two concepts → split), and (path-gated behind
+  `$PROJECT_MEMORY_DIR`, local-only) caps agent-memory files + their index. The failure message states the
+  rule — *trim / split / move to git history, never raise the limit*. Folded the concept inline into the
+  scaffolder's **rule 8** and **removed the standalone `kit/docs-hygiene-guards.md`** (the prompt stays
+  self-contained). Mirrored into the README kit table + enforcement bullet.
+
 ### Changed
 - **README restructured for readability.** Added a hero *"at a glance"* panel with the headline stat,
   moved a 30-second **Quick start** near the top, made the long `🇹🇭 สรุปภาษาไทย` summary collapsible

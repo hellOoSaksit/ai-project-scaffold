@@ -264,7 +264,21 @@ config-driven, not hardcoded" guard for the app/plugin repos). A **ready-to-copy
 this prompt at [`docs-lint.py`](docs-lint.py) — stdlib-only (no pip install), UTF-8-safe, and already
 enforces all five checks (required frontmatter + valid `type`/`status`, balanced frontmatter, resolvable
 relative links, GitHub-style anchors, and the `related:` graph); drop it in as `scripts/docs-lint.py` and
-point CI at it.
+point CI at it — the reference also ships the **anti-bloat hygiene guards** below.
+
+> **Docs hygiene guards (anti-bloat).** Link/frontmatter checks happily pass a *bloated* file, so also
+> guard **size + history** for the docs an agent re-reads **every session** (`process/session-handoff.md`,
+> hot docs, memories). These decay by append-only accretion — each session stacks another `SESSION-END
+> STATE` / log block and nothing trims — until a file meant to orient a new session in 30s is thousands of
+> stale, token-heavy lines that cost more and orient *less* (research: oversized context *lowers* task
+> success). Defaults, tune per project: **fail** when `session-handoff.md` passes ~350 lines or stacks >2
+> end-state blocks; **warn** when any curated doc passes ~600 lines (usually two concepts → split it, 1
+> file = 1 concept). Agent-**memory** guards (each memory ≤ ~200 lines, its index ≤ ~120) are agent-specific
+> and usually live *outside* the repo, so path-gate them (env-guarded) to run in local pre-commit only —
+> skipped in CI. Encode the governing rule in the failure message: **trim / split / move to git history —
+> never raise the limit**, or the ceiling erodes one bump at a time. The reference `docs-lint.py` already
+> implements the generalizable (session-handoff + curated-doc) guards; the memory guards ride
+> `$PROJECT_MEMORY_DIR`.
 
 **9. Skills** — when a multi-step workflow recurs (≥~3×) or is high-value, wrap it as
 `.claude/skills/<name>/SKILL.md` (frontmatter `name` + `description`=trigger; body **thin**, pointing to

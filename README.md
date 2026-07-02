@@ -159,7 +159,7 @@ docs, multiple apps, or AI agents working in it.
 - **Single-source-of-truth registries** — `ports.md` + `versions.md`, so values never drift.
 - **Plugin lifecycle** — build big features as separate apps, then fold back into core on gated promotion.
 - **A secure-coding baseline** — always-on **rule 8** (*secure by default*) + a scaffolded `architecture/security.md` with an OWASP-aligned MUST table (injection · XSS · IDOR · auth · uploads · SSRF · dependency audits), stack decisions recorded per row.
-- **Enforcement** — a shipped, stdlib-only [`docs-lint.py`](kit/docs-lint.py) (frontmatter + link/anchor/`related` validator) **plus** a `docs-lint.sh` that fails the build on a broken internal link, both wired into CI; LF normalized repo-wide via `.gitattributes`.
+- **Enforcement** — a shipped, stdlib-only [`docs-lint.py`](kit/docs-lint.py) (frontmatter + link/anchor/`related` validator **+ anti-bloat hygiene guards** that fail on a `session-handoff.md` grown past its ceiling) **plus** a `docs-lint.sh` that fails the build on a broken internal link, both wired into CI; LF normalized repo-wide via `.gitattributes`.
 - **A worked example** — a full [plugin-architecture](examples/plugin-architecture/) build (Core + Plugin + App + Docs) with an enforceable `system-design.md`, a runnable reference skeleton, and two copy-paste CI gates (manifest schema + a no-plugin→plugin-imports check).
 - **A recommended agent toolchain** — a curated plugin/MCP set (process skills, code review, VCS, fresh library docs, router upkeep, a language LSP, semantic search, guardrail hooks) so the agent works *with* the structure above instead of around it — see [Installation](#installation).
 
@@ -273,7 +273,7 @@ instead of slowly rotting:
 | [`kit/new-project-scaffold.md`](kit/new-project-scaffold.md) | **Scaffolder** — bootstrap a brand-new project from zero: umbrella `[Name]-Project/` + `[Name]-{Core,Docs,Plugin}` + every convention (router · frontmatter · registries · plugin lifecycle · runbooks · skills · enforcement). |
 | [`kit/knowledge-refactorer.md`](kit/knowledge-refactorer.md) | **Refactorer** — refactor an *existing* project's Markdown into this architecture (one shared router · README = GitHub · `docs/` in English). |
 | [`kit/principles.html`](kit/principles.html) | **Visual overview** of the whole structure & workflows as graphs (mermaid) — **[open the live version ↗](https://helloosaksit.github.io/ai-project-scaffold/kit/principles.html)** (GitHub Pages) or open the file locally; for attaching/presenting. The `.md` prompts are the source of truth. |
-| [`kit/docs-lint.py`](kit/docs-lint.py) | **Reference validator** the scaffolder installs as `scripts/docs-lint.py` (rule 8) — stdlib-only, UTF-8-safe; enforces required frontmatter + valid `type`/`status`, resolvable relative links, GitHub-style anchors, and the `related:` graph. Copy it into your docs repo and wire CI at it. |
+| [`kit/docs-lint.py`](kit/docs-lint.py) | **Reference validator** the scaffolder installs as `scripts/docs-lint.py` (rule 8) — stdlib-only, UTF-8-safe; enforces required frontmatter + valid `type`/`status`, resolvable relative links, GitHub-style anchors, the `related:` graph, and **anti-bloat hygiene guards** (size/history ceilings on the read-every-session docs). Copy it into your docs repo and wire CI at it. |
 
 ## 🧩 Examples
 

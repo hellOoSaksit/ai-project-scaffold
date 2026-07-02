@@ -14,9 +14,15 @@
 #      (external http(s)/mailto links are not this tool's job; check them with a link checker).
 #   4. Anchors — a `...#anchor` link points at a heading that actually exists in the target file.
 #   5. `related:` graph — every path in a file's `related:` list resolves to an existing file.
+#   6. Hygiene guards (anti-bloat) — the docs an agent re-reads every session must not silently grow
+#      by append-only accretion: `process/session-handoff.md` stays under a line ceiling and stacks no
+#      more than a couple of end-state blocks (fail); an oversized curated doc warns (split it). Agent
+#      memory files are guarded too when $PROJECT_MEMORY_DIR is set (local-only; CI skips it). See the
+#      constants block below to tune the limits per project.
 #
-# Exit code is 0 when clean, 1 when any problem is found — so a broken link or missing/invalid
-# frontmatter turns the build red instead of letting the docs quietly drift from the code.
+# Exit code is 0 when clean, 1 when any problem is found — so a broken link, missing/invalid
+# frontmatter, or a bloated read-every-session doc turns the build red instead of letting the docs
+# quietly drift from the code. Non-blocking hygiene nudges print as warnings without failing.
 #
 # Usage:  python3 scripts/docs-lint.py [ROOT]      # ROOT defaults to the current directory
 
@@ -36,6 +42,24 @@ VALID_STATUS = {"active", "design", "built", "draft", "deprecated"}
 
 # Files that are markdown but carry NO frontmatter by their own spec/convention.
 EXEMPT_BASENAMES = {"CLAUDE.md", "AGENTS.md", "README.md"}
+
+# --- docs hygiene guards (anti-bloat) — tune per project ------------------------------------
+# The docs an agent re-reads EVERY session (the status handoff, hot docs, memories) decay by
+# append-only accretion: each session stacks another block and nothing trims, until the file that
+# should orient a new session in 30s is thousands of lines that cost more and orient less. Link/
+# frontmatter checks don't catch it (the file is valid, just bloated), so guard size + history.
+# When a guard trips, the fix is to TRIM / SPLIT / move to git history — never raise the limit.
+SESSION_HANDOFF_SUFFIX = os.path.join("process", "session-handoff.md")
+MAX_SESSION_HANDOFF_LINES = 350          # one latest state block + prose; older logs → git history
+END_STATE_MARKER = "SESSION-END STATE"   # your session-end block marker
+MAX_END_STATE_BLOCKS = 2                  # latest + at most one prior; no stacked history
+CURATED_DOC_WARN_LINES = 600             # a doc this big is usually two concepts → warn, don't fail
+# Agent-memory guards are agent-specific and usually live OUTSIDE the repo, so they run only when
+# $PROJECT_MEMORY_DIR points at an existing dir (local pre-commit / a docs-check skill, not CI).
+MEMORY_DIR_ENV = "PROJECT_MEMORY_DIR"
+MEMORY_INDEX_NAME = "MEMORY.md"
+MAX_MEMORY_FILE_LINES = 200              # a memory is "one fact"; a 500-line memory is stale accretion
+MAX_MEMORY_INDEX_LINES = 120            # it's an index (one line per memory), never memory bodies
 
 LINK_RE = re.compile(r"\]\(([^)]+)\)")          # the target inside ](...)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
@@ -138,6 +162,7 @@ def is_under_docs(path: str) -> bool:
 def main() -> int:
     root = sys.argv[1] if len(sys.argv) > 1 else "."
     problems = []
+    warnings = []
     md_files = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in (".git", "node_modules")]
@@ -204,6 +229,47 @@ def main() -> int:
             elif anchor and dest.endswith(".md") and anchor not in collect_anchors(dest):
                 problems.append(f"{path}: anchor not found in {file_part} → #{anchor}")
 
+        # (6) docs hygiene guards (anti-bloat) — see the constants block up top
+        line_count = text.count("\n") + 1
+        norm = os.path.normpath(path)
+        if norm.endswith(SESSION_HANDOFF_SUFFIX):
+            if line_count > MAX_SESSION_HANDOFF_LINES:
+                problems.append(
+                    f"{path}: session-handoff is {line_count} lines (> {MAX_SESSION_HANDOFF_LINES}) "
+                    f"— trim to the latest state; older logs live in git history, don't stack them here")
+            end_blocks = text.count(END_STATE_MARKER)
+            if end_blocks > MAX_END_STATE_BLOCKS:
+                problems.append(
+                    f"{path}: {end_blocks} '{END_STATE_MARKER}' blocks (> {MAX_END_STATE_BLOCKS}) "
+                    f"— keep the latest + at most one prior; delete older ones (they're in git history)")
+        elif needs_fm and line_count > CURATED_DOC_WARN_LINES:
+            warnings.append(
+                f"{path}: {line_count} lines (> {CURATED_DOC_WARN_LINES}) — likely two concepts; "
+                f"consider splitting (1 file = 1 concept). Trim/split — don't raise the limit.")
+
+    # (6b) agent-memory guards — path-gated (memory usually lives outside the repo, so CI skips it)
+    mem_dir = os.environ.get(MEMORY_DIR_ENV)
+    if mem_dir and os.path.isdir(mem_dir):
+        for dirpath, dirnames, filenames in os.walk(mem_dir):
+            dirnames[:] = [d for d in dirnames if d not in (".git", "node_modules")]
+            for name in sorted(filenames):
+                if not name.endswith(".md"):
+                    continue
+                mpath = os.path.join(dirpath, name)
+                try:
+                    with io.open(mpath, encoding="utf-8") as fh:
+                        n = fh.read().count("\n") + 1
+                except OSError:
+                    continue
+                if name == MEMORY_INDEX_NAME and n > MAX_MEMORY_INDEX_LINES:
+                    problems.append(
+                        f"{mpath}: memory index is {n} lines (> {MAX_MEMORY_INDEX_LINES}) "
+                        f"— it's an index (one line per memory), never memory bodies")
+                elif name != MEMORY_INDEX_NAME and n > MAX_MEMORY_FILE_LINES:
+                    problems.append(
+                        f"{mpath}: memory is {n} lines (> {MAX_MEMORY_FILE_LINES}) "
+                        f"— a memory is one fact; split or trim, don't grow it")
+
     # UTF-8-safe output regardless of the CI locale
     out = sys.stdout
     try:
@@ -212,13 +278,18 @@ def main() -> int:
         pass
 
     total = len(md_files)
+    if warnings:
+        print("docs-lint warnings (non-blocking):\n", file=out)
+        for w in warnings:
+            print(f"  ! {w}", file=out)
+        print("", file=out)
     if problems:
         print("docs-lint FAILED:\n", file=out)
         for p in problems:
             print(f"  - {p}", file=out)
         print(f"\n{len(problems)} problem(s) in {total} docs.", file=out)
         return 1
-    print(f"docs-lint OK — {total} docs, frontmatter + links + anchors + related all valid.", file=out)
+    print(f"docs-lint OK — {total} docs, frontmatter + links + anchors + related + hygiene all valid.", file=out)
     return 0
 
 
