@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Every umbrella tree now shows the capability/tool split.** The project-root tree diagrams still drew a
+  single `[Name]-Plugin/<id>/` (or `<app>/`) line, so the feature-vs-tool separation was invisible at the
+  structure level. Updated the trees in the README Examples section, `kit/new-project-scaffold.md`,
+  `kit/knowledge-refactorer.md` (Target Shape), and `kit/principles.html` (§1 mermaid) to show a
+  `kind: capability` feature folder **and** a `kind: tool` backing-service folder (postgres/redis/minio,
+  own container + compose fragment), and to note the repo-per-plugin evolution
+  (`[Name]-Plugin-<Feature>/` · `[Name]-Plugin-Tools-<Infra>/`) matching a real deployed project — while
+  keeping the single-repo default that the example's CI gates assume.
+
 ### Fixed
 - **README Thai summary was missing the agent-toolchain recommendation** — the English body has a full
   "Recommended agent toolchain" table (scaffolder rule 10) but the `🇹🇭 สรุปภาษาไทย` section never

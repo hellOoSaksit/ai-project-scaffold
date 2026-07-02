@@ -157,8 +157,10 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
 ├── llms.txt                     # LLM navigation map (llmstxt.org): H1 + blockquote summary + H2 link-lists
 ├── [Name]-Core/                 # the primary/host application
 │   └── README.md                # GitHub overview (humans) — NO project knowledge, NOT an index, NO CLAUDE stub
-├── [Name]-Plugin/           # plugin apps (may be empty at first)
-│   └── <app>/                   # one folder per plugin app, when it exists
+├── [Name]-Plugin/           # plugins (may be empty at first) — one self-contained folder each, folder = manifest `id`
+│   ├── <feature>/               # kind: capability — an in-process feature (same language as Core)
+│   └── <tool>/                  # kind: tool — a backing service (postgres/redis/minio: own container + compose fragment)
+│                                #   grows to repo-per-plugin: [Name]-Plugin-<Feature>/ · [Name]-Plugin-Tools-<Infra>/
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
     └── docs/                    # ALL project knowledge, centralized (English) — every file has frontmatter

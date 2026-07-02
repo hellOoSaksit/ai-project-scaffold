@@ -237,12 +237,19 @@ Worked, opinionated applications of the kit — copy the shape, not just the ide
 
 ```
 [Name]-Project/              # workspace root — CLAUDE.md · AGENTS.md · llms.txt
-├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth)
-├── [Name]-Plugin/<id>/      # one self-contained plugin per folder — removable, never imports another plugin
-│                            #   kind: capability = in-process feature · kind: tool = a backing service (own container)
+├── [Name]-Core/             # the HOST — infra only (Plugin Loader · Router · Event Bus · DI · Auth); ships no datastore
+├── [Name]-Plugin/           # every plugin is a self-contained folder here — removable, never imports another
+│   ├── <feature>/           #   kind: capability — an in-process feature (crm, chat, …), same language as Core
+│   └── postgres/            #   kind: tool — a backing service in its own container (compose fragment + a connection contract)
 ├── [Name]-App/              # composition root — wires Core + chosen plugins, RUNS + integration-tests the system
 └── [Name]-Docs/docs/        # all knowledge (architecture/system-design.md lives here) + registries
 ```
+
+> **Grows to repo-per-plugin.** The tree above is the single-repo default (plugins are folders under
+> `[Name]-Plugin/`, which is what the example's CI gates assume). When a plugin needs its own release cadence
+> it graduates to its **own repo** — `[Name]-Plugin-<Feature>/` for features and `[Name]-Plugin-Tools-<Infra>/`
+> for tools (e.g. `[Name]-Plugin-Tools-Postgres`) — while the manifest `id` inside stays the lowercase,
+> unprefixed namespace (`postgres`). Same contract either way; only the packaging changes.
 
 **Why it matters** — the design is fully enforceable, not aspirational:
 

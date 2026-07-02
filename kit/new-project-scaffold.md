@@ -117,11 +117,12 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
 │                                #   "file lists" of `[name](path): note` links — order per spec, no other headings
 ├── [Name]-Core/                 # the primary/host app everything plugs into (frontend + backend, or whatever the app is)
 │   └── README.md                # GitHub overview for humans — NO project knowledge, NOT an index
-├── [Name]-Plugin/           # the plugin line — big features as their own apps (may be empty at first)
-│   └── <id>/                    # one folder per plugin, when it exists — folder = the manifest `id`
-│                                 #   (lowercase, no prefix). `kind: capability` = an in-process feature;
-│                                 #   `kind: tool` (e.g. a `postgres/`, `redis/` datastore) ships its own
-│                                 #   container via a compose fragment — see rule 5.
+├── [Name]-Plugin/           # the plugin line — one self-contained folder per plugin (may be empty at first)
+│   ├── <feature>/               # kind: capability — an in-process feature (same language as Core)
+│   └── <tool>/                  # kind: tool — a backing service (postgres/redis/minio: own container + compose
+│                                #   fragment; Core ships no datastore). Folder = the manifest `id` (lowercase,
+│                                #   no prefix). Grows to repo-per-plugin: [Name]-Plugin-<Feature>/ ·
+│                                #   [Name]-Plugin-Tools-<Infra>/. See rule 5.
 └── [Name]-Docs/
     ├── README.md                # GitHub overview
     └── docs/                    # ALL project knowledge, centralized, English — every file has frontmatter

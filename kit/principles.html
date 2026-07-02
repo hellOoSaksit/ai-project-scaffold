@@ -95,7 +95,7 @@ flowchart TD
   L["llms.txt — LLM navigation map"]:::r
   M["[Name]-Core/<br/>primary/host app (frontend + backend)"]:::box
   D["[Name]-Docs/docs/<br/>all knowledge (English, .md, frontmatter)"]:::box
-  S["[Name]-Plugin/<br/>big features = separate apps"]:::box
+  S["[Name]-Plugin/<br/>plugins = capability (in-process feature)<br/>or tool (backing service — own container)"]:::box
   U --> C --> A --> L
   U --> M
   U --> D
