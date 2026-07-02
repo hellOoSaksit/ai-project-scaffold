@@ -109,6 +109,7 @@ Acme-Project/                        # workspace root = its own thin git repo (t
         ├── acme-dev-rules.md        # scaffold · operating contract (the plugin MUST/MUST NOT rules land here)
         ├── architecture/
         │   ├── system-design.md     # ★ THIS DOC — the plugin architecture contract
+        │   ├── security.md          # scaffold · rule-8 baseline (injection/XSS/authz/uploads) + per-stack decisions
         │   ├── data-model.md  database-design.md  tech-stack.md  deploy.md  risks.md
         │   ├── ports.md             # scaffold · registry — host ports (Core + each plugin's dev port)
         │   └── versions.md          # scaffold · registry — Core version + each plugin version (manifest → here)

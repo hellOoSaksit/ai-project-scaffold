@@ -45,6 +45,7 @@ AI documentation architecture · RAG knowledge base · monorepo scaffold · AI-f
 - **AGENTS.md** — คล้ายกัน แต่เป็นไฟล์มาตรฐานที่ AI tool ตัวอื่น (Cursor, Copilot, Codex) อ่านได้ด้วย
 - **docs/ ที่แบ่งเป็นไฟล์ย่อยตามเรื่อง** — เช่น แยกไฟล์ architecture, features, process แต่ละไฟล์มี metadata บอกว่าไฟล์นี้เกี่ยวกับอะไร ทำให้ AI เปิดอ่านแค่ไฟล์ที่เกี่ยวจริงๆ ไม่ต้องโหลดเอกสารทั้งโปรเจกต์
 - **Registry** — ค่าที่ต้องมีที่เดียว เช่น port, version เก็บไว้ในไฟล์เดียว (`ports.md`, `versions.md`) ไม่กระจายไปเขียนซ้ำหลายที่ กันปัญหาไฟล์นึงบอกอย่าง อีกไฟล์บอกอีกอย่าง
+- **security.md** — เช็คลิสต์ความปลอดภัยประจำโปรเจกต์ พร้อมกฎเหล็กที่ AI ต้องทำตามตอนเขียนโค้ด เช่น ห้ามต่อสตริงเป็น SQL (ต้องใช้ parameterized query/ORM เท่านั้น กัน SQL injection), ตรวจ input ทุกตัวที่ขอบระบบ, กัน XSS ด้วย auto-escaping ของ framework, ทุก route ต้องเช็คสิทธิ์ฝั่ง server แบบ deny-by-default, กฎเรื่องไฟล์อัปโหลด/รหัสผ่าน/rate limit ครบ — ตอนตั้งโปรเจกต์ AI จะบันทึกว่าใช้เครื่องมือไหนกับแต่ละข้อ (ORM ตัวไหน, validator ตัวไหน) ลงไฟล์นี้เลย
 - **Plugin** — ฟีเจอร์ใหม่แต่ละตัวแยกเป็น plugin ของตัวเอง ถอดออกได้โดยไม่กระทบส่วนอื่น พอฟีเจอร์นิ่งแล้วค่อยรวมเข้า Core ทีหลัง และแยกชัดระหว่าง plugin ที่เป็นฟีเจอร์ (รันในโปรเซสเดียวกับ Core) กับ plugin ที่เป็น **tool** (เช่น Postgres, Redis, MinIO — มีคอนเทนเนอร์ของตัวเอง แยกออกไปต่างหาก) ดูตัวอย่างเต็มที่ [Examples](#-examples)
 - **docs-lint** — สคริปต์ที่รันใน CI คอยเช็คว่าลิงก์ไม่พัง เอกสารไม่ขาดตก ถ้าพังคือ build แดงทันที ไม่ปล่อยให้เอกสารค่อยๆ เพี้ยนไปเรื่อยๆ
 
@@ -137,6 +138,12 @@ docs, multiple apps, or AI agents working in it.
 
 What the kit bakes in:
 
+- **A secure-coding baseline, not just secret handling** — always-on **rule 8** (*secure by default*: no
+  string-built SQL/shell — parameterized queries/ORM only · validate input at the edge · framework
+  auto-escaping against XSS · server-side deny-by-default authz, object-level too · generic client errors)
+  plus a scaffolded **`architecture/security.md`** carrying the full OWASP-aligned MUST table (injection,
+  XSS, IDOR, auth/sessions, mass assignment, uploads, SSRF/path traversal, abuse controls, dependency
+  audits) with the per-stack decision recorded next to each row at intake.
 - **Secrets only in gitignored env files** — commit `*.example` placeholders only; never in code, docs, or the frontend bundle.
 - **Prod boot-guard** — the app refuses to start in `production` while any credential is still a dev default.
 - **AI-aware by default** — the agent rules above mean assistants redact keys, don't echo them back, and won't commit one by accident.

@@ -130,9 +130,10 @@ invent** an answer (no-invention rule). Integrations / AI / storage answers also
         ├── GLOSSARY.md          # domain terms
         ├── [name]-dev-rules.md  # the operating contract (type: rule; §0…) — the detail the router points to
         ├── architecture/        # system-design · data-model · database-design · tech-stack · deploy · risks
+        │                        #   · security (the rule-8 baseline: injection/XSS/authz/uploads — see rule 6)
         │                        #   + registries: ports.md (host ports) · versions.md (app versions / UAT↔Prod drift)
         ├── features/            # 1 file = 1 feature
-        ├── plugin/          # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
+        ├── plugin/              # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts (scaffolder + refactorer) + principles.html (structure overview)
         └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
@@ -188,6 +189,13 @@ lives in `[Name]-Docs/docs/`, never in a README or the router.
 6. **Docs in English** (AI-first) — see § Language exception for presentation artifacts.
 7. **Code clarity** — write for the next reader (clean-code/KISS, comments explain *why*, match the
    file's style).
+8. **Secure by default** — SQL/shell is **never built by string concatenation**: queries go through
+   parameterized statements / the ORM only, shell-outs use argument arrays. Validate every external
+   input **at the edge** (schema/type validation); render through the framework's auto-escaping (raw-HTML
+   sinks only for sanitized, non-user content). Every route/action enforces authz **server-side,
+   deny-by-default — object-level too** (knowing an id is not permission). Clients get generic errors;
+   stack traces/SQL stay in server logs. The full checklist + per-stack decisions live in
+   `architecture/security.md` (see rule 6) — open it before writing auth, queries, uploads, or fetch-URL code.
 
 **3. Frontmatter on every **knowledge** `.md`** (everything under `docs/`) — `title · type · status ·
 keywords · related · summary · updated`. Ship a `templates/frontmatter.md` defining it as the canonical
@@ -223,6 +231,27 @@ a single settings object. Keep this layering **even inside plugin apps** so merg
 (a stateless app may skip the data layer; a stateful one keeps it). **Database/ER:** a `database-design.md`
 (clarity + keys + normalization + indexing + when to split a DB on a bounded-context seam) + an as-built
 `data-model.md` updated with every schema change.
+
+**Security is part of the blueprint, not an afterthought.** Scaffold `architecture/security.md` — the
+owning doc behind always-on rule 8 — seeded with the OWASP-aligned baseline below. At intake, record the
+*per-stack decision* next to each row (which ORM, which validator, which hashing lib) and mark rows that
+don't apply `N/A (why)`; review the table whenever a feature touches auth, uploads, queries, or outbound
+fetches. In a plugin architecture, the *between-plugin* least-privilege rules are the
+[example's §9](../examples/plugin-architecture/system-design.md#9-security-boundaries-new--least-privilege-between-plugins).
+
+| Threat | MUST (stack-agnostic) |
+|---|---|
+| **SQL / NoSQL / command injection** | queries only via parameterized statements or the ORM/query-builder — never string-concatenated; shell-outs take argument arrays, never interpolated strings |
+| **XSS** | render through the framework's auto-escaping; raw-HTML sinks (`dangerouslySetInnerHTML` / `v-html` / `innerHTML`) only for sanitized, non-user content; ship a CSP |
+| **Broken authz / IDOR** | every route/action checks permission server-side, deny-by-default; **object-level** checks (owning the id ≠ typing the id); never trust client-side role flags |
+| **Auth & sessions** | passwords hashed with argon2/bcrypt (never MD5/SHA-x/reversible); sessions/JWT short-lived + revocable; cookies `HttpOnly` + `Secure` + `SameSite`; CSRF protection on cookie-based state changes |
+| **Input validation / mass assignment** | validate shape + type at the edge (schema validation — zod / pydantic / your stack's); bind request bodies to explicit DTOs/allowlists, never spread raw params into a model |
+| **File uploads** | allowlist type + size, re-derive the extension server-side, random storage names, store outside the webroot (object storage), never execute/serve from the upload path |
+| **SSRF / path traversal** | outbound fetches of user-supplied URLs go through an allowlist; file paths are resolved then prefix-checked against the intended root |
+| **Secrets & config** | rule 2 applies (gitignored env + prod boot-guard + AI redaction); no secrets in logs or error messages |
+| **Errors & logging** | clients get generic errors; stack traces/SQL only in server logs; logs carry no credentials, and no PII beyond need (PDPA/GDPR minimize) |
+| **Abuse controls** | rate-limit auth + expensive endpoints; security headers on by default (CSP · HSTS · `nosniff` · `frame-ancestors`) |
+| **Dependencies** | lockfile committed; audit on a schedule (runbook R4) + CI alert; patch/pin known-vulnerable versions before release |
 
 **7. Process docs** — `session-handoff.md` (status + resume; keep a "NOW" TL;DR on top), `playbook.md`
 (work loop), `lessons.md` (decisions/traps), `ai-runbooks.md` (R1 pause/resume · R2 new session/move
@@ -282,8 +311,9 @@ below are the Claude Code plugin/MCP ecosystem; swap the equivalent on another a
 2. **Router + AGENTS.md + llms.txt** — `CLAUDE.md` filled with `[Name]`'s always-on rules + a task router;
    `AGENTS.md` carrying the signal-dense build/test/run commands + boundaries (then → router); `llms.txt`
    navigation map (H1 + blockquote summary + link-list) generated from the docs index.
-3. **docs index + dev-rules + GLOSSARY + templates + registries** — created with real frontmatter; the
-   registries seed `[Name]-Core`'s ports/version; empty tables otherwise.
+3. **docs index + dev-rules + GLOSSARY + templates + registries + security baseline** — created with real
+   frontmatter; the registries seed `[Name]-Core`'s ports/version; `architecture/security.md` seeded with
+   the rule-6 baseline table + the per-stack decisions from the intake; empty tables otherwise.
 4. **One starter feature/plugin doc** only if the project already has one — else leave the dirs +
    index rows ready, not stubbed with fiction (the [knowledge-refactorer](knowledge-refactorer.md)'s
    no-invention rule applies).

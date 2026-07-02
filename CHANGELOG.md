@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-02
+
+### Security
+- **Secure-coding baseline** — a new always-on **rule 8** (*Secure by default*: no string-built SQL/shell —
+  parameterized queries/ORM only · validate every input at the edge · framework auto-escaping against XSS ·
+  server-side deny-by-default authz incl. object-level · generic client errors) plus a scaffolded
+  **`architecture/security.md`** seeded from an OWASP-aligned MUST table (injection, XSS, broken
+  authz/IDOR, auth & sessions, mass assignment, file uploads, SSRF/path traversal, errors & logging,
+  abuse controls, dependency audits) with the per-stack decision (ORM · validator · hashing lib) recorded
+  per row at intake — scaffolder convention 6 + output contract + tree. Mirrored into the refactorer
+  (a "no security baseline → seed it, never invent per-stack choices" detect rule + Target Shape tree),
+  `kit/principles.html` (always-on rules 1–8), the example README tree, and the README **Security**
+  section + Thai summary. Cross-links the plugin example's §9 for between-plugin least privilege.
+
 ## [0.4.0] - 2026-07-02
 
 ### Added
@@ -163,7 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supply-chain hardening: **OpenSSF Scorecard** workflow, **Dependabot** (GitHub Actions), all CI actions
   pinned by commit SHA.
 
-[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...v0.2.1

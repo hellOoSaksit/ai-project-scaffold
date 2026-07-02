@@ -76,6 +76,10 @@ propose changes, show a before→after map, and never silently lose or invent kn
   an agent opens the file that *owns* a job — so the Diátaxis intent lives in frontmatter `type:`, not the tree.)
 - **Knowledge buried in READMEs** → move to docs concept files; the repo `README.md` stays a
   **GitHub overview** (for humans), holding no project knowledge and serving as no one's index.
+- **No security baseline** → if `architecture/security.md` is missing, seed it from the scaffolder's
+  rule-6 OWASP-aligned table (always-on rule 8's owning doc) and gather any security rules scattered
+  across the old docs into it; the *per-stack* decisions (ORM, validator, hashing lib) come from the
+  user/codebase — never invented.
 - **Implicit dependencies** ("as above") → convert to explicit `related:`/inline links.
 - **No router / no progressive disclosure** → build/repair the single shared `CLAUDE.md` (below).
 
@@ -169,9 +173,10 @@ Language (English prose) · Consistency. Flag anything ≤2 as priority.
         ├── GLOSSARY.md          # domain terms (resolve once, not per session)
         ├── [name]-dev-rules.md  # the operating contract (type: rule; §0…)
         ├── architecture/        # system-design · data-model · database-design · tech-stack · deploy · risks
+        │                        #   · security (the rule-8 baseline: injection/XSS/authz/uploads)
         │                        #   + registries: ports.md (host ports) · versions.md (app versions / UAT↔Prod drift)
         ├── features/            # 1 file = 1 feature
-        ├── plugin/          # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
+        ├── plugin/              # 1 subfolder = 1 plugin app (README + overview/errors/decisions/integration)
         ├── process/             # playbook · session-handoff · lessons · ai-runbooks · (improvement-plan)
         ├── new-project/         # setup prompts + structure overview (this file lives here)
         └── templates/           # copy-to-create scaffolds (frontmatter, feature, plugin, changelog)
