@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-02
+
 ### Added
 - **README Thai summary** — a concise `🇹🇭 สรุปภาษาไทย` section near the top (linked from **Contents**)
   covering the same principles as the English body (router/AGENTS.md/llms.txt, job-first docs, registries,
@@ -161,7 +163,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supply-chain hardening: **OpenSSF Scorecard** workflow, **Dependabot** (GitHub Actions), all CI actions
   pinned by commit SHA.
 
-[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/hellOoSaksit/ai-project-scaffold/compare/v0.1.0...v0.2.0
